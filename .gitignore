@@ -38,3 +38,6 @@ out/
 
 ### Database ###
 /src/main/resources/application-db.yml
+
+### Label ###
+/.github/labels.json
