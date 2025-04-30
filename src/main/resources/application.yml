@@ -1,3 +1,6 @@
 spring:
   application:
     name: AI_Mockly
+
+  profiles:
+    active: ["db"]
