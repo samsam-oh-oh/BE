@@ -3,4 +3,4 @@ spring:
     name: AI_Mockly
 
   profiles:
-    active: ["db"]
+    active: ["db", "jwt", "infra"]

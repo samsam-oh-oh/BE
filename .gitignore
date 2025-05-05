@@ -39,5 +39,11 @@ out/
 ### Database ###
 /src/main/resources/application-db.yml
 
+### JWT ###
+/src/main/resources/application-jwt.yml
+
+### Infra ###
+/src/main/resources/application-infra.yml
+
 ### Label ###
 /.github/labels.json
