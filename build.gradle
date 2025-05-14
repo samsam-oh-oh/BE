@@ -25,16 +25,24 @@ repositories {
 
 dependencies {
     // Spring Boot
+    implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
     implementation 'org.springframework.boot:spring-boot-starter-security'
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
     developmentOnly 'org.springframework.boot:spring-boot-devtools'
+    implementation 'com.google.code.gson:gson:2.9.0'
 
     // Flyway
     implementation 'org.flywaydb:flyway-core'
+    implementation "org.flywaydb:flyway-mysql"
 
     // Lombok
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
+
+    // DB
+    runtimeOnly 'com.h2database:h2'
+    runtimeOnly 'com.mysql:mysql-connector-j'
 
     // TEST
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
