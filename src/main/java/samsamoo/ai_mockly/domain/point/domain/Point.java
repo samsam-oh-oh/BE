@@ -1,12 +1,19 @@
 package samsamoo.ai_mockly.domain.point.domain;
 
 import jakarta.persistence.*;
+import lombok.AccessLevel;
 import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 import samsamoo.ai_mockly.domain.common.BaseEntity;
 import samsamoo.ai_mockly.domain.member.domain.Member;
 
 import java.time.LocalDateTime;
 
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@Getter
+@Entity
+@Table(name = "points")
 public class Point extends BaseEntity {
 
     @Id
@@ -32,7 +39,7 @@ public class Point extends BaseEntity {
         this.member = member;
         this.amount = amount;
         this.type = type;
-        this.expiredAt = getCreatedAt().plusMonths(6);
+        this.expiredAt = LocalDateTime.now().plusMonths(6);
         this.state = state;
     }
 
