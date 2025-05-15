@@ -1,4 +1,4 @@
-package samsamoo.ai_mockly.global.common;
+package samsamoo.ai_mockly.global.config;
 
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Info;
