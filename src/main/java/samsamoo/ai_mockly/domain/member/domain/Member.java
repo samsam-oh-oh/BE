@@ -10,7 +10,7 @@ import samsamoo.ai_mockly.domain.common.BaseEntity;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
 @Entity
-@Table(name = "members")
+@Table(name = "member")
 public class Member extends BaseEntity {
 
     @Id
@@ -20,6 +20,7 @@ public class Member extends BaseEntity {
     @Column(name = "kakao_id", nullable = false)
     private String kakaoId;
 
+    @Column(nullable = false)
     private String nickname;
 
     @Column(name = "profile_image")

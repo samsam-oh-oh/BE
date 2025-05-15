@@ -38,3 +38,5 @@ out/
 
 ### YAML File ###
 src/main/resources/application-db.yml
+src/main/resources/application-jwt.yml
+src/main/resources/application-infra.yml
