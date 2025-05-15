@@ -20,6 +20,7 @@ public class Member extends BaseEntity {
     @Column(name = "kakao_id", nullable = false)
     private String kakaoId;
 
+    @Column(nullable = false)
     private String nickname;
 
     @Column(name = "profile_image")
