@@ -26,14 +26,14 @@ public class Member extends BaseEntity {
     @Column(name = "profile_image")
     private String profileImage;
 
-    @Column(name = "max_level")
-    private Integer maxLevel;
+    @Column(name = "max_score")
+    private Integer maxScore;
 
     @Builder
-    public Member(String kakaoId, String nickname, String profileImage, Integer maxLevel) {
+    public Member(String kakaoId, String nickname, String profileImage, Integer maxScore) {
         this.kakaoId = kakaoId;
         this.nickname = nickname;
         this.profileImage = profileImage;
-        this.maxLevel = maxLevel;
+        this.maxScore = maxScore;
     }
 }
