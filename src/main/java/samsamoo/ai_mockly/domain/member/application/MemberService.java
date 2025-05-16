@@ -21,7 +21,7 @@ public class MemberService {
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new BadCredentialsException("해당 아이디를 갖는 유저가 없습니다."));
 
-        if(nickname != null && !nickname.isBlank()) {
+        if(nickname != null || nickname.isBlank()) {
             boolean exists = memberRepository.existsByNickname(nickname);
             if(exists) {
                 throw new IllegalArgumentException("이미 존재하는 닉네임입니다.");

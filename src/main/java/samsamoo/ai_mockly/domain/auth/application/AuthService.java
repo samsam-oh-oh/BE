@@ -15,6 +15,10 @@ public class AuthService {
     private final MemberRepository memberRepository;
 
     public SuccessResponse<DuplicateCheckRes> checkNicknameDuplicate(String nickname) {
+        if(nickname == null || nickname.isBlank()) {
+            throw new IllegalArgumentException("닉네임은 공백일 수 없습니다.");
+        }
+
         DuplicateCheckRes nicknameDuplicateCheckRes = DuplicateCheckRes.builder()
                 .availability(!memberRepository.existsByNickname(nickname))
                 .build();

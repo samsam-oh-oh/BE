@@ -8,6 +8,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.ErrorResponse;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import samsamoo.ai_mockly.domain.auth.dto.response.DuplicateCheckRes;
@@ -21,6 +22,10 @@ public interface AuthApi {
             @ApiResponse(
                     responseCode = "200", description = "닉네임 중복 체크 성공",
                     content = {@Content(mediaType = "application/json", schema = @Schema(implementation = DuplicateCheckRes.class))}
+            ),
+            @ApiResponse(
+                    responseCode = "400", description = "닉네임 중복 체크 실패(잘못된 요청 방식)",
+                    content = {@Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class))}
             )
     })
     @GetMapping(value = "/nicknames")
