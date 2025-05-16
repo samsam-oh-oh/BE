@@ -8,11 +8,11 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.ErrorResponse;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import samsamoo.ai_mockly.domain.auth.dto.response.DuplicateCheckRes;
 import samsamoo.ai_mockly.global.common.SuccessResponse;
+import samsamoo.ai_mockly.global.exception.ErrorResponse;
 
 @Tag(name = "AuthApi", description = "인증 관련 API입니다.")
 public interface AuthApi {
