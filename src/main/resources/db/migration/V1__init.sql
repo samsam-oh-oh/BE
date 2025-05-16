@@ -6,7 +6,7 @@ CREATE TABLE member
     kakao_id      VARCHAR(255) NOT NULL,
     nickname      VARCHAR(255) NOT NULL,
     profile_image VARCHAR(255) NULL,
-    max_level     INT          NULL,
+    max_score     INT          NULL,
     CONSTRAINT pk_members PRIMARY KEY (id)
 );
 
