@@ -25,7 +25,7 @@ CREATE TABLE point
     id         BIGINT AUTO_INCREMENT NOT NULL,
     created_at datetime     NOT NULL,
     updated_at datetime     NOT NULL,
-    member_id  BIGINT       NULL,
+    member_id  BIGINT       NOT NULL,
     amount     INT          NULL,
     type       VARCHAR(255) NULL,
     expired_at datetime     NULL,

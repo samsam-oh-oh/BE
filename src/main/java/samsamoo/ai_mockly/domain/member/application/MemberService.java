@@ -6,6 +6,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import samsamoo.ai_mockly.domain.member.domain.Member;
 import samsamoo.ai_mockly.domain.member.domain.repository.MemberRepository;
+import samsamoo.ai_mockly.domain.member.dto.response.MemberInfoRes;
+import samsamoo.ai_mockly.domain.point.domain.repository.PointRepository;
 import samsamoo.ai_mockly.global.common.Message;
 import samsamoo.ai_mockly.global.common.SuccessResponse;
 
@@ -15,6 +17,23 @@ import samsamoo.ai_mockly.global.common.SuccessResponse;
 public class MemberService {
 
     private final MemberRepository memberRepository;
+    private final PointRepository pointRepository;
+
+    public SuccessResponse<MemberInfoRes> getMemberInfo(Long memberId) {
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new BadCredentialsException("해당 아이디를 갖는 유저가 없습니다."));
+
+        Integer totalPoint = pointRepository.sumActiveAmountByMemberId(memberId);
+
+        MemberInfoRes memberInfoRes = MemberInfoRes.builder()
+                .nickname(member.getNickname())
+                .profileImage(member.getProfileImage())
+                .maxScore(member.getMaxScore())
+                .pointAmount(totalPoint)
+                .build();
+
+        return SuccessResponse.of(memberInfoRes);
+    }
 
     @Transactional
     public SuccessResponse<Message> updateNickname(Long memberId, String nickname) {

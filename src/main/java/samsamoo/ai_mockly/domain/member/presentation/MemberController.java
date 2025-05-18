@@ -5,6 +5,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import samsamoo.ai_mockly.domain.member.application.MemberService;
 import samsamoo.ai_mockly.domain.member.dto.request.UpdateNicknameReq;
+import samsamoo.ai_mockly.domain.member.dto.response.MemberInfoRes;
 import samsamoo.ai_mockly.global.common.Message;
 import samsamoo.ai_mockly.global.common.SuccessResponse;
 
@@ -14,6 +15,11 @@ import samsamoo.ai_mockly.global.common.SuccessResponse;
 public class MemberController implements MemberApi {
 
     private final MemberService memberService;
+
+    @GetMapping("/{memberId}")
+    public ResponseEntity<SuccessResponse<MemberInfoRes>> getMemberInfo(@PathVariable Long memberId) {
+        return ResponseEntity.ok(memberService.getMemberInfo(memberId));
+    }
 
     @Override
     @PatchMapping("/{memberId}/nickname")
