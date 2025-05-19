@@ -17,6 +17,7 @@ public class MemberController implements MemberApi {
 
     private final MemberService memberService;
 
+    @Override
     @GetMapping("/{memberId}")
     public ResponseEntity<SuccessResponse<MemberInfoRes>> getMemberInfo(@PathVariable Long memberId) {
         return ResponseEntity.ok(memberService.getMemberInfo(memberId));
@@ -28,6 +29,7 @@ public class MemberController implements MemberApi {
         return ResponseEntity.ok(memberService.updateNickname(memberId, request.getNickname()));
     }
 
+    @Override
     @PatchMapping("/{memberId}/image")
     public ResponseEntity<SuccessResponse<Message>> modifyProfileImage(@PathVariable Long memberId, @RequestPart MultipartFile profileImage) {
         return ResponseEntity.ok(memberService.modifyProfileImage(memberId, profileImage));
