@@ -14,7 +14,7 @@ import java.util.List;
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/scores")
-public class ScoreController {
+public class ScoreController implements ScoreApi {
 
     private final ScoreService scoreService;
 
