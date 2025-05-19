@@ -19,10 +19,9 @@ public class ScoreService {
     private final ScoreRepository scoreRepository;
 
     public SuccessResponse<List<RankingListRes>> getRankingList() {
-        List<Score> scoreList = scoreRepository.findAllByHighScoreOrderByTotalScoreDesc(true);
+        List<Score> scoreList = scoreRepository.findTop5ByHighScoreOrderByTotalScoreDesc(true);
 
         List<RankingListRes> rankingList = scoreList.stream()
-                .limit(5)
                 .map(score -> RankingListRes.builder()
                         .id(score.getMember().getId())
                         .nickname(score.getMember().getNickname())

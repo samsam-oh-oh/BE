@@ -7,5 +7,5 @@ import java.util.List;
 
 public interface ScoreRepository extends JpaRepository<Score, Long> {
 
-    List<Score> findAllByHighScoreOrderByTotalScoreDesc(boolean highScore);
+    List<Score> findTop5ByHighScoreOrderByTotalScoreDesc(boolean highScore);
 }
