@@ -21,7 +21,7 @@ public class Point extends BaseEntity {
     private Long id;
 
     @ManyToOne
-    @JoinColumn(name = "member_id")
+    @JoinColumn(name = "member_id", nullable = false)
     private Member member;
 
     private Integer amount;

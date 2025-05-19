@@ -4,8 +4,11 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 import samsamoo.ai_mockly.domain.member.domain.Member;
 import samsamoo.ai_mockly.domain.member.domain.repository.MemberRepository;
+import samsamoo.ai_mockly.domain.member.dto.response.MemberInfoRes;
+import samsamoo.ai_mockly.domain.point.domain.repository.PointRepository;
 import samsamoo.ai_mockly.global.common.Message;
 import samsamoo.ai_mockly.global.common.SuccessResponse;
 
@@ -15,6 +18,23 @@ import samsamoo.ai_mockly.global.common.SuccessResponse;
 public class MemberService {
 
     private final MemberRepository memberRepository;
+    private final PointRepository pointRepository;
+
+    public SuccessResponse<MemberInfoRes> getMemberInfo(Long memberId) {
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new BadCredentialsException("해당 아이디를 갖는 유저가 없습니다."));
+
+        Integer totalPoint = pointRepository.sumActiveAmountByMemberId(memberId);
+
+        MemberInfoRes memberInfoRes = MemberInfoRes.builder()
+                .nickname(member.getNickname())
+                .profileImage(member.getProfileImage())
+                .maxScore(member.getMaxScore())
+                .pointAmount(totalPoint)
+                .build();
+
+        return SuccessResponse.of(memberInfoRes);
+    }
 
     @Transactional
     public SuccessResponse<Message> updateNickname(Long memberId, String nickname) {
@@ -32,6 +52,24 @@ public class MemberService {
 
         Message message = Message.builder()
                 .message("닉네임이 수정되었습니다.")
+                .build();
+
+        return SuccessResponse.of(message);
+    }
+
+    @Transactional
+    public  SuccessResponse<Message> modifyProfileImage(Long memberId, MultipartFile profileImage) {
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new BadCredentialsException("해당 아이디를 갖는 유저가 없습니다."));
+
+        String imageUrl = profileImage.getOriginalFilename();
+
+        if(!profileImage.isEmpty()) {
+            member.updateProfileImage(imageUrl);
+        }
+
+        Message message = Message.builder()
+                .message("프로필 사진이 수정되었습니다.")
                 .build();
 
         return SuccessResponse.of(message);
