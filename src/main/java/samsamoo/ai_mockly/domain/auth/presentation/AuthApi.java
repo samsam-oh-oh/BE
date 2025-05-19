@@ -14,7 +14,7 @@ import samsamoo.ai_mockly.domain.auth.dto.response.DuplicateCheckRes;
 import samsamoo.ai_mockly.global.common.SuccessResponse;
 import samsamoo.ai_mockly.global.exception.ErrorResponse;
 
-@Tag(name = "AuthApi", description = "인증 관련 API입니다.")
+@Tag(name = "Auth API", description = "인증 관련 API입니다.")
 public interface AuthApi {
 
     @Operation(summary = "닉네임 중복 체크", description = "닉네임 중복 여부를 체크합니다.")

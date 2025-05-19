@@ -16,7 +16,7 @@ import samsamoo.ai_mockly.global.common.Message;
 import samsamoo.ai_mockly.global.common.SuccessResponse;
 import samsamoo.ai_mockly.global.exception.ErrorResponse;
 
-@Tag(name = "MemberApi", description = "회원 관련 API입니다.")
+@Tag(name = "Member API", description = "회원 관련 API입니다.")
 public interface MemberApi {
 
     @Operation(summary = "회원 정보 불러오기", description = "회원 정보를 불러옵니다.")
