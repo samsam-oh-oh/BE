@@ -22,10 +22,10 @@ public class Score extends BaseEntity {
     @JoinColumn(name = "member_id")
     private Member member;
 
-    @Column(name = "total_score")
+    @Column(name = "total_score", nullable = false)
     private Integer totalScore;
 
-    @Column(name = "high_score")
+    @Column(name = "high_score", nullable = false)
     private Boolean highScore;
 
     @Column(name = "logicality_score")
