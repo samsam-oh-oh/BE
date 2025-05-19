@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 import samsamoo.ai_mockly.domain.member.domain.Member;
 import samsamoo.ai_mockly.domain.member.domain.repository.MemberRepository;
 import samsamoo.ai_mockly.domain.member.dto.response.MemberInfoRes;
@@ -51,6 +52,24 @@ public class MemberService {
 
         Message message = Message.builder()
                 .message("닉네임이 수정되었습니다.")
+                .build();
+
+        return SuccessResponse.of(message);
+    }
+
+    @Transactional
+    public  SuccessResponse<Message> modifyProfileImage(Long memberId, MultipartFile profileImage) {
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new BadCredentialsException("해당 아이디를 갖는 유저가 없습니다."));
+
+        String ImageUrl = profileImage.getOriginalFilename();
+
+        if(!profileImage.isEmpty()) {
+            member.updateProfileImage(ImageUrl);
+        }
+
+        Message message = Message.builder()
+                .message("프로필 사진이 수정되었습니다.")
                 .build();
 
         return SuccessResponse.of(message);
