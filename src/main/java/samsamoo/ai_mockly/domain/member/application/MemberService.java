@@ -62,10 +62,10 @@ public class MemberService {
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new BadCredentialsException("해당 아이디를 갖는 유저가 없습니다."));
 
-        String ImageUrl = profileImage.getOriginalFilename();
+        String imageUrl = profileImage.getOriginalFilename();
 
         if(!profileImage.isEmpty()) {
-            member.updateProfileImage(ImageUrl);
+            member.updateProfileImage(imageUrl);
         }
 
         Message message = Message.builder()
