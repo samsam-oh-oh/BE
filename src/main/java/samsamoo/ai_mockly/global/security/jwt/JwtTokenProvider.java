@@ -20,7 +20,7 @@ public interface JwtTokenProvider {
 
     Optional<String> extractRefreshToken(HttpServletRequest request);
 
-    Optional<String> extractNickname(String accessToken);
+    Optional<String> extractMemberId(String accessToken);
 
     void setAccessTokenHeader(HttpServletResponse response, String accessToken);
 
