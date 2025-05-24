@@ -12,7 +12,12 @@ import java.util.List;
 @Configuration
 public class WebMvcConfig implements WebMvcConfigurer {
 
-    private LoginMemberArgumentResolver loginMemberArgumentResolver;
+    private final LoginMemberArgumentResolver loginMemberArgumentResolver;
+
+    public WebMvcConfig(LoginMemberArgumentResolver loginMemberArgumentResolver) {
+        this.loginMemberArgumentResolver = loginMemberArgumentResolver;
+    }
+
     private final long MAX_AGE_SECS = 3600;
 
     @Value("${app.cors.allowed-origins}")
