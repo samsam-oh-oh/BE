@@ -108,14 +108,13 @@ public class JwtTokenProviderImpl implements JwtTokenProvider {
     }
 
     @Override
-    public Optional<String> extractNickname(String accessToken) {
+    public Optional<Long> extractMemberId(String accessToken) {
         try {
-            return Optional.ofNullable(
-                    JWT.require(Algorithm.HMAC512(secret))
-                            .build()
-                            .verify(accessToken)
-                            .getClaim(USERNAME_CLAIM)
-                            .asString());
+            return Optional.ofNullable(JWT.require(Algorithm.HMAC512(secret))
+                    .build()
+                    .verify(accessToken)
+                    .getClaim(USERID_CLAIM)
+                    .asLong());
         } catch (Exception e) {
             log.error(e.getMessage());
             return Optional.empty();
