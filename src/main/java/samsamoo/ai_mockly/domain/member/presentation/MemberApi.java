@@ -34,7 +34,7 @@ public interface MemberApi {
     })
     @GetMapping("/me")
     ResponseEntity<SuccessResponse<MemberInfoRes>> getMemberInfo(
-            @Parameter(description = "정보를 불러오고 싶은 회원 아이디를 입력하시오.", required = true) @LoginMember Member member);
+            @Parameter(description = "정보를 불러오고 싶은 회원의 Access Token을 입력하시오.", required = true) @LoginMember Member member);
 
     @Operation(summary = "닉네임 수정", description = "닉네임을 수정합니다.")
     @ApiResponses(value = {
@@ -49,7 +49,7 @@ public interface MemberApi {
     })
     @PatchMapping("/me/nickname")
     ResponseEntity<SuccessResponse<Message>> updateNickname(
-            @Parameter(description = "닉네임을 수정하고 싶은 회원 아이디를 입력하시오.", required = true) @LoginMember Member member,
+            @Parameter(description = "닉네임을 수정하고 싶은 회원의 Access Token을 입력하시오.", required = true) @LoginMember Member member,
             @Parameter(description = "Schemas의 UpdateNicknameReq 참고", required = true) @RequestBody UpdateNicknameReq request);
 
     @Operation(summary = "프로필 사진 수정", description = "프로필 사진을 수정합니다.")
@@ -65,6 +65,6 @@ public interface MemberApi {
     })
     @PatchMapping("/me/image")
     ResponseEntity<SuccessResponse<Message>> modifyProfileImage(
-            @Parameter(description = "프로필 이미지를 수정하고 싶은 회원 아이디를 입력하시오.", required = true) @LoginMember Member member,
+            @Parameter(description = "프로필 이미지를 수정하고 싶은 회원의 Access Token을 입력하시오.", required = true) @LoginMember Member member,
             @Parameter(description = "수정할 이미지 파일을 입력하시오.") @RequestPart MultipartFile profileImage);
 }
