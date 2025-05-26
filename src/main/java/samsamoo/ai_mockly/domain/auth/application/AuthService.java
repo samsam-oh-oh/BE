@@ -10,6 +10,9 @@ import samsamoo.ai_mockly.domain.auth.dto.response.LoginRes;
 import samsamoo.ai_mockly.domain.member.domain.Member;
 import samsamoo.ai_mockly.domain.member.domain.repository.MemberRepository;
 import samsamoo.ai_mockly.domain.member.dto.response.MemberDTO;
+import samsamoo.ai_mockly.domain.point.domain.Point;
+import samsamoo.ai_mockly.domain.point.domain.State;
+import samsamoo.ai_mockly.domain.point.domain.repository.PointRepository;
 import samsamoo.ai_mockly.global.common.SuccessResponse;
 import samsamoo.ai_mockly.global.security.jwt.JwtTokenProvider;
 import samsamoo.ai_mockly.infrastructure.redis.RedisUtil;
@@ -27,6 +30,8 @@ public class AuthService {
 
     private final KakaoTokenValidator kakaoTokenValidator;
     private final MemberRepository memberRepository;
+    private final PointRepository pointRepository;
+
     private final JwtTokenProvider jwtTokenProvider;
     private final RedisUtil redisUtil;
 
@@ -62,7 +67,15 @@ public class AuthService {
                 .maxScore(0)
                 .build();
 
+        Point point = Point.builder()
+                .member(member)
+                .amount(0)
+                .type("new join")
+                .state(State.ACTIVE)
+                .build();
+
         memberRepository.save(member);
+        pointRepository.save(point);
 
         return member;
     }
