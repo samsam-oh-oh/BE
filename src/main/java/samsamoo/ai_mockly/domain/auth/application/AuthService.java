@@ -1,10 +1,13 @@
 package samsamoo.ai_mockly.domain.auth.application;
 
+import com.auth0.jwt.JWT;
+import com.auth0.jwt.interfaces.DecodedJWT;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import samsamoo.ai_mockly.domain.auth.dto.request.LoginReq;
+import samsamoo.ai_mockly.domain.auth.dto.request.LogoutReq;
 import samsamoo.ai_mockly.domain.auth.dto.response.DuplicateCheckRes;
 import samsamoo.ai_mockly.domain.auth.dto.response.LoginRes;
 import samsamoo.ai_mockly.domain.member.domain.Member;
@@ -13,9 +16,13 @@ import samsamoo.ai_mockly.domain.member.dto.response.MemberDTO;
 import samsamoo.ai_mockly.domain.point.domain.Point;
 import samsamoo.ai_mockly.domain.point.domain.State;
 import samsamoo.ai_mockly.domain.point.domain.repository.PointRepository;
+import samsamoo.ai_mockly.global.common.Message;
 import samsamoo.ai_mockly.global.common.SuccessResponse;
 import samsamoo.ai_mockly.global.security.jwt.JwtTokenProvider;
 import samsamoo.ai_mockly.infrastructure.redis.RedisUtil;
+
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -90,5 +97,30 @@ public class AuthService {
                 .build();
 
         return SuccessResponse.of(nicknameDuplicateCheckRes);
+    }
+
+    public SuccessResponse<Message> logout(Long memberId, LogoutReq logoutReq) {
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 아이디를 갖는 유저가 없습니다."));
+        String findNickname = redisUtil.getData(RT_PREFIX + logoutReq.getRefreshToken());
+        if(!member.getNickname().equals(findNickname))
+            throw new IllegalArgumentException("본인의 RefreshToken만 삭제 가능합니다.");
+        redisUtil.deleteData(RT_PREFIX + logoutReq.getRefreshToken());
+
+        // 남는 시간 초단위 계산
+        DecodedJWT decodedJWT = JWT.decode(logoutReq.getAccessToken());
+        Instant expiredAt = decodedJWT.getExpiresAt().toInstant();
+        Instant now = Instant.now();
+        long between = ChronoUnit.SECONDS.between(now, expiredAt);
+        System.out.println("남은 시간 : " + between);
+
+        // 남는 시간 만료만큼 AccessToken을 Blacklist에 포함
+        redisUtil.setDataExpire(BL_AT_PREFIX + logoutReq.getAccessToken(), "black list token", between);
+
+        Message message = Message.builder()
+                .message("로그아웃이 완료되었습니다.")
+                .build();
+
+        return SuccessResponse.of(message);
     }
 }
