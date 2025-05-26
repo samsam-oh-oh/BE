@@ -34,4 +34,10 @@ public class FeedbackController implements FeedbackApi {
         Long memberId = member.getId();
         return ResponseEntity.ok(feedbackService.getFeedbackContents(memberId));
     }
+
+    @Override
+    @GetMapping("/contents/{feedbackId}")
+    public ResponseEntity<SuccessResponse<FeedbackContentsRes>> getFeedbackContent(@PathVariable Long feedbackId) {
+        return ResponseEntity.ok(feedbackService.getFeedbackContent(feedbackId));
+    }
 }

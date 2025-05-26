@@ -61,4 +61,15 @@ public class FeedbackService {
 
         return SuccessResponse.of(feedbackContentList);
     }
+
+    public SuccessResponse<FeedbackContentsRes> getFeedbackContent(Long feedbackId) {
+        Feedback feedback = feedbackRepository.findById(feedbackId)
+                .orElseThrow(() -> new BadCredentialsException("해당 feedbackId를 갖는 feedback가 없습니다."));
+
+        FeedbackContentsRes feedbackContentsRes = FeedbackContentsRes.builder()
+                .content(feedback.getContent())
+                .build();
+
+        return SuccessResponse.of(feedbackContentsRes);
+    }
 }

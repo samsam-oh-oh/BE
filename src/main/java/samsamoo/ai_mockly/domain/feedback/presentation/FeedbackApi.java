@@ -10,6 +10,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import samsamoo.ai_mockly.domain.feedback.dto.request.FeedbackSaveReq;
@@ -55,4 +56,19 @@ public interface FeedbackApi {
     @GetMapping("/contents/all")
     ResponseEntity<SuccessResponse<List<FeedbackContentsRes>>> getFeedbackContents(
             @Parameter(description = "피드백 내용을 불러오고 싶은 회원의 Access Token을 입력하시오.", required = true) @LoginMember Member member);
+
+    @Operation(summary = "피드백 내용 불러오기", description = "선택한 피드백 내용을 가져옵니다.")
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200", description = "피드백 내용 불러오기 성공",
+                    content = {@Content(mediaType = "application/json", schema = @Schema(implementation = FeedbackContentsRes.class))}
+            ),
+            @ApiResponse(
+                    responseCode = "400", description = "피드백 내용 불러오기 실패(잘못된 요청 방식)",
+                    content = {@Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class))}
+            )
+    })
+    @GetMapping("/contents/{feedbackId}")
+    ResponseEntity<SuccessResponse<FeedbackContentsRes>> getFeedbackContent(
+            @Parameter(description = "불러올 피드백의 id를 입력하시오.", required = true) @PathVariable Long feedbackId);
 }
