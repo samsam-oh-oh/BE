@@ -3,6 +3,7 @@ package samsamoo.ai_mockly.domain.auth.application;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -32,6 +33,7 @@ import java.util.List;
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 @Service
+@Slf4j
 public class AuthService {
 
     @Value("${jwt.refresh.expiration}")
@@ -119,7 +121,7 @@ public class AuthService {
         Instant expiredAt = decodedJWT.getExpiresAt().toInstant();
         Instant now = Instant.now();
         long between = ChronoUnit.SECONDS.between(now, expiredAt);
-        System.out.println("남은 시간 : " + between);
+        log.debug("Access token remaining time: {} seconds", between);
 
         // 남는 시간 만료만큼 AccessToken을 Blacklist에 포함
         redisUtil.setDataExpire(BL_AT_PREFIX + logoutReq.getAccessToken(), "black list token", between);

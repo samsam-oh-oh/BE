@@ -69,8 +69,8 @@ public interface AuthApi {
     })
     @DeleteMapping("/logout")
     ResponseEntity<SuccessResponse<Message>> logout(
-            @Parameter(description = "로그아웃하고 싶은 회원의 Access Token을 입력하시오.", required = true)@LoginMember Member member,
-            @Parameter(description = "Schemas의 LogoutReq를 참고", required = true) @RequestBody LogoutReq logoutReq);
+            @Parameter(description = "로그아웃하고 싶은 회원의 Access Token을 입력하시오.", required = true) @LoginMember Member member,
+            @Parameter(description = "Schemas의 LogoutReq를 참고", required = true) @Valid @RequestBody LogoutReq logoutReq);
 
     @Operation(summary = "회원 탈퇴", description = "회원 탈퇴을 진행합니다.")
     @ApiResponses(value = {
