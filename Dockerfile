@@ -4,4 +4,4 @@ FROM openjdk:17
 ARG JAR_FILE=build/libs/*.jar
 # jar file copy
 COPY ${JAR_FILE} aimockly.jar
-ENTRYPOINT ["java", "-jar", "/almockly.jar"]
+ENTRYPOINT ["java", "-jar", "/aimockly.jar"]
