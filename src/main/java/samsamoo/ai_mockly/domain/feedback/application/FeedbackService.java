@@ -22,6 +22,10 @@ public class FeedbackService {
 
     @Transactional
     public SuccessResponse<Message> saveFeedback(Long memberId, FeedbackSaveReq feedbackSaveReq) {
+        if(feedbackSaveReq.getContent() == null || feedbackSaveReq.getContent().isBlank()) {
+            throw new IllegalArgumentException("면접 결과를 입력해주세요.");
+        }
+
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new BadCredentialsException("해당 아이디를 갖는 유저가 없습니다."));
 
