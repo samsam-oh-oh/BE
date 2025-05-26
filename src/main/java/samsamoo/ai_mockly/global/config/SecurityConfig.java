@@ -31,13 +31,13 @@ public class SecurityConfig {
             "/swagger-ui.html",
             "/auth/**",
             "/members/**",
-            "/scores/**"
+            "/scores/**",
+            "/feedbacks/**"
     };
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                .addFilterBefore(jwtAuthenticationProcessingFilter(), UsernamePasswordAuthenticationFilter.class)
                 .httpBasic(AbstractHttpConfigurer::disable)
                 .formLogin(AbstractHttpConfigurer::disable)
                 .csrf(AbstractHttpConfigurer::disable)
