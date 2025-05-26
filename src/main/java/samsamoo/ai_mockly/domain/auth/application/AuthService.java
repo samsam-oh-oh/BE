@@ -10,12 +10,16 @@ import samsamoo.ai_mockly.domain.auth.dto.request.LoginReq;
 import samsamoo.ai_mockly.domain.auth.dto.request.LogoutReq;
 import samsamoo.ai_mockly.domain.auth.dto.response.DuplicateCheckRes;
 import samsamoo.ai_mockly.domain.auth.dto.response.LoginRes;
+import samsamoo.ai_mockly.domain.feedback.domain.Feedback;
+import samsamoo.ai_mockly.domain.feedback.domain.repository.FeedbackRepository;
 import samsamoo.ai_mockly.domain.member.domain.Member;
 import samsamoo.ai_mockly.domain.member.domain.repository.MemberRepository;
 import samsamoo.ai_mockly.domain.member.dto.response.MemberDTO;
 import samsamoo.ai_mockly.domain.point.domain.Point;
 import samsamoo.ai_mockly.domain.point.domain.State;
 import samsamoo.ai_mockly.domain.point.domain.repository.PointRepository;
+import samsamoo.ai_mockly.domain.score.domain.Score;
+import samsamoo.ai_mockly.domain.score.domain.repository.ScoreRepository;
 import samsamoo.ai_mockly.global.common.Message;
 import samsamoo.ai_mockly.global.common.SuccessResponse;
 import samsamoo.ai_mockly.global.security.jwt.JwtTokenProvider;
@@ -23,6 +27,7 @@ import samsamoo.ai_mockly.infrastructure.redis.RedisUtil;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.List;
 
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -38,6 +43,8 @@ public class AuthService {
     private final KakaoTokenValidator kakaoTokenValidator;
     private final MemberRepository memberRepository;
     private final PointRepository pointRepository;
+    private final ScoreRepository scoreRepository;
+    private final FeedbackRepository feedbackRepository;
 
     private final JwtTokenProvider jwtTokenProvider;
     private final RedisUtil redisUtil;
@@ -119,6 +126,27 @@ public class AuthService {
 
         Message message = Message.builder()
                 .message("로그아웃이 완료되었습니다.")
+                .build();
+
+        return SuccessResponse.of(message);
+    }
+
+    @Transactional
+    public SuccessResponse<Message> exit(Long memberId) {
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new IllegalArgumentException("해당 아이디를 갖는 유저가 없습니다."));
+
+        List<Point> pointList = pointRepository.findAllByMember(member);
+        List<Score> scoreList = scoreRepository.findAllByMember(member);
+        List<Feedback> feedbackList = feedbackRepository.findAllByMember(member);
+        pointRepository.deleteAll(pointList);
+        scoreRepository.deleteAll(scoreList);
+        feedbackRepository.deleteAll(feedbackList);
+
+        memberRepository.delete(member);
+
+        Message message = Message.builder()
+                .message("회원 탈퇴가 완료되었습니다.")
                 .build();
 
         return SuccessResponse.of(message);

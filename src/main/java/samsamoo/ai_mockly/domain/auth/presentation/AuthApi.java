@@ -71,4 +71,19 @@ public interface AuthApi {
     ResponseEntity<SuccessResponse<Message>> logout(
             @Parameter(description = "로그아웃하고 싶은 회원의 Access Token을 입력하시오.", required = true)@LoginMember Member member,
             @Parameter(description = "Schemas의 LogoutReq를 참고", required = true) @RequestBody LogoutReq logoutReq);
+
+    @Operation(summary = "회원 탈퇴", description = "회원 탈퇴을 진행합니다.")
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200", description = "탈퇴 성공",
+                    content = {@Content(mediaType = "application/json", schema = @Schema(implementation = Message.class))}
+            ),
+            @ApiResponse(
+                    responseCode = "400", description = "탈퇴 실패(잘못된 요청 방식)",
+                    content = {@Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class))}
+            )
+    })
+    @DeleteMapping("/exit")
+    ResponseEntity<SuccessResponse<Message>> exit(
+            @Parameter(description = "탈퇴하고 싶은 회원의 Access Token을 입력하시오.", required = true) @LoginMember Member member);
 }
