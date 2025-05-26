@@ -35,7 +35,6 @@ public class JwtAuthenticationProcessingFilter extends OncePerRequestFilter {
                 .filter(jwtTokenProvider::isTokenValid)
                 .filter(accessToken -> !jwtTokenProvider.isTokenInBlackList(accessToken))
                 .flatMap(jwtTokenProvider::extractMemberId)
-                .map(Long::valueOf)
                 .flatMap(memberRepository::findById)
                 .ifPresent(this::saveAuthentication);
         filterChain.doFilter(request, response);
