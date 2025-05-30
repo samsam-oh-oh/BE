@@ -7,6 +7,10 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import samsamoo.ai_mockly.domain.common.BaseEntity;
 import samsamoo.ai_mockly.domain.member.domain.Member;
+import samsamoo.ai_mockly.domain.scoredetails.domain.ScoreDetails;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
@@ -28,22 +32,18 @@ public class Score extends BaseEntity {
     @Column(name = "high_score", nullable = false)
     private Boolean highScore;
 
-    @Column(name = "logicality_score")
-    private Integer logicalityScore;        // 논리성 점수
-
-    @Column(name = "concreteness_score")
-    private Integer concretenessScore;      // 구체성 점수
-
-    @Column(name = "idealism_score")
-    private Integer idealismScore;          // 사실성 점수
+    @OneToMany(mappedBy = "score", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ScoreDetails> scoreDetails = new ArrayList<ScoreDetails>();
 
     @Builder
-    public Score(Member member, Integer totalScore, Boolean highScore, Integer logicalityScore, Integer concretenessScore, Integer idealismScore) {
+    public Score(Member member, Integer totalScore, Boolean highScore) {
         this.member = member;
         this.totalScore = totalScore;
         this.highScore = highScore;
-        this.logicalityScore = logicalityScore;
-        this.concretenessScore = concretenessScore;
-        this.idealismScore = idealismScore;
+    }
+
+    public void addScoreDetails(ScoreDetails scoreDetails) {
+        this.scoreDetails.add(scoreDetails);
+        scoreDetails.setScore(this);
     }
 }
