@@ -2,6 +2,7 @@ package samsamoo.ai_mockly.domain.scoredetails.domain;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -28,7 +29,7 @@ public class ScoreDetails extends BaseEntity {
     private Category category;
 
     @Column(name = "score_value", nullable = false)
-    @Max(value = 100)
+    @Min(value = 0) @Max(value = 100)
     private Integer scoreValue;
 
     @Builder

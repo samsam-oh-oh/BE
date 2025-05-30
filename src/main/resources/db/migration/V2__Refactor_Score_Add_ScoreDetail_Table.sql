@@ -14,7 +14,7 @@ CREATE TABLE score_details
     updated_at         datetime NOT NULL,
     score_id           BIGINT       NOT NULL,
     category           VARCHAR(255) NOT NULL,   -- Enum(ScoreCategory) 값 저장
-    score_value        INT          NOT NULL,
+    score_value        INT          NOT NULL CHECK (score_value >= 0 AND score_value <= 100),
     CONSTRAINT pk_score_detail PRIMARY KEY (id),
     CONSTRAINT FK_SCORE_DETAIL_ON_SCORE FOREIGN KEY (score_id) REFERENCES score (id) ON DELETE CASCADE
 );
