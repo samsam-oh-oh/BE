@@ -9,7 +9,7 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.authentication.logout.LogoutFilter;
 import samsamoo.ai_mockly.domain.member.domain.repository.MemberRepository;
 import samsamoo.ai_mockly.global.security.AuthenticationEntryPointImpl;
 import samsamoo.ai_mockly.global.security.filter.JwtAuthenticationProcessingFilter;
@@ -47,7 +47,9 @@ public class SecurityConfig {
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers(WHITE_LIST).permitAll()
                         .anyRequest().authenticated()
-                );
+                )
+                .addFilterBefore(jwtAuthenticationProcessingFilter(), LogoutFilter.class)
+        ;
 
         return http.build();
     }
