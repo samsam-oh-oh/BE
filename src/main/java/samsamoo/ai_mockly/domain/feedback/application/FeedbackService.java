@@ -87,4 +87,28 @@ public class FeedbackService {
 
         return SuccessResponse.of(feedbackContentsRes);
     }
+
+    @Transactional
+    public SuccessResponse<Message> unlockFeedback(Long memberId, Long feedbackId) {
+        Member viewer = memberRepository.findById(memberId)
+                .orElseThrow(() -> new BadCredentialsException("해당 아이디를 갖는 유저가 없습니다."));
+        Feedback feedback = feedbackRepository.findById(feedbackId)
+                .orElseThrow(() -> new BadCredentialsException("해당 feedbackId를 갖는 feedback가 없습니다."));
+
+        Member owner = feedback.getMember();
+        if(viewer.getId().equals(owner.getId())) {
+            throw new IllegalArgumentException("본인 피드백은 unlock할 수 없습니다.");
+        }
+
+        boolean alreadyAccess = feedbackAccessRepository.existsByViewerAndFeedback(viewer, feedback);
+        if(alreadyAccess) {
+            throw new IllegalArgumentException("이미 접근한 피드백입니다.");
+        }
+
+        Message message = Message.builder()
+                .message("플레이어가 피드백을 열 수 있습니다.")
+                .build();
+
+        return SuccessResponse.of(message);
+    }
 }
