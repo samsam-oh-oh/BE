@@ -85,7 +85,7 @@ public class AuthService {
 
         Point point = Point.builder()
                 .member(member)
-                .amount(0)
+                .amount(30)
                 .type("new join")
                 .state(State.ACTIVE)
                 .build();
