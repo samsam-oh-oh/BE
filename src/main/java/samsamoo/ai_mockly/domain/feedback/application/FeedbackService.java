@@ -8,6 +8,7 @@ import samsamoo.ai_mockly.domain.feedback.domain.Feedback;
 import samsamoo.ai_mockly.domain.feedback.domain.repository.FeedbackRepository;
 import samsamoo.ai_mockly.domain.feedback.dto.request.FeedbackSaveReq;
 import samsamoo.ai_mockly.domain.feedback.dto.response.FeedbackContentsRes;
+import samsamoo.ai_mockly.domain.feedbackaccess.repository.FeedbackAccessRepository;
 import samsamoo.ai_mockly.domain.member.domain.Member;
 import samsamoo.ai_mockly.domain.member.domain.repository.MemberRepository;
 import samsamoo.ai_mockly.global.common.Message;
@@ -23,6 +24,7 @@ public class FeedbackService {
 
     private final FeedbackRepository feedbackRepository;
     private final MemberRepository memberRepository;
+    private final FeedbackAccessRepository feedbackAccessRepository;
 
     @Transactional
     public SuccessResponse<Message> saveFeedback(Long memberId, FeedbackSaveReq feedbackSaveReq) {
@@ -62,9 +64,22 @@ public class FeedbackService {
         return SuccessResponse.of(feedbackContentList);
     }
 
-    public SuccessResponse<FeedbackContentsRes> getFeedbackContent(Long feedbackId) {
+    public SuccessResponse<FeedbackContentsRes> getFeedbackContent(Long memberId, Long feedbackId) {
+        Member viewer = memberRepository.findById(memberId)
+                .orElseThrow(() -> new BadCredentialsException("해당 아이디를 갖는 유저가 없습니다."));
+
         Feedback feedback = feedbackRepository.findById(feedbackId)
                 .orElseThrow(() -> new BadCredentialsException("해당 feedbackId를 갖는 feedback가 없습니다."));
+
+        Member owner = feedback.getMember();
+
+        // 본인이면 무조건 열람 허용
+        if(!viewer.getId().equals(owner.getId())) {
+            boolean hasAccess = feedbackAccessRepository.existsByViewerAndFeedback(viewer, feedback);
+            if(!hasAccess) {
+                throw new IllegalArgumentException("해당 feedback에 대한 접근 권한이 없습니다. 포인트로 해제하세요.");
+            }
+        }
 
         FeedbackContentsRes feedbackContentsRes = FeedbackContentsRes.builder()
                 .content(feedback.getContent())
