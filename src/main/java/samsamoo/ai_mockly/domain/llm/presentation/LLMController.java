@@ -8,6 +8,7 @@ import org.springframework.web.multipart.MultipartFile;
 import samsamoo.ai_mockly.domain.llm.application.LLMService;
 import samsamoo.ai_mockly.domain.llm.dto.response.LLMFeedbackRes;
 import samsamoo.ai_mockly.domain.llm.dto.response.LLMQuestionRes;
+import samsamoo.ai_mockly.domain.llm.dto.response.LLMScoreRes;
 import samsamoo.ai_mockly.global.common.Message;
 import samsamoo.ai_mockly.global.common.SuccessResponse;
 
@@ -53,5 +54,10 @@ public class LLMController implements LLMApi {
     @GetMapping("/feedbacks")
     public ResponseEntity<SuccessResponse<LLMFeedbackRes>> getEvaluateFeedback() {
         return ResponseEntity.ok(llmService.getEvaluateFeedback());
+    }
+
+    @GetMapping("/scores")
+    public ResponseEntity<SuccessResponse<LLMScoreRes>> getScoreFeedback() {
+        return ResponseEntity.ok(llmService.getScoreFeedback());
     }
 }

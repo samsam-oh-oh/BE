@@ -6,13 +6,13 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import samsamoo.ai_mockly.domain.llm.dto.response.LLMFeedbackRes;
 import samsamoo.ai_mockly.domain.llm.dto.response.LLMQuestionRes;
+import samsamoo.ai_mockly.domain.llm.dto.response.LLMScoreRes;
 import samsamoo.ai_mockly.global.common.Message;
 import samsamoo.ai_mockly.global.common.SuccessResponse;
 import samsamoo.ai_mockly.infrastructure.external.llm.LLMInterviewClient;
 import samsamoo.ai_mockly.infrastructure.external.llm.dto.LLMResponseDTO;
 
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
@@ -93,7 +93,7 @@ public class LLMService {
         String rawFeedbackText = llmClient.fetchFeedbacksText().block();
 
         if(rawFeedbackText == null || rawFeedbackText.isBlank()) {
-            throw new IllegalStateException("질문을 가져오는데 실패했습니다.");
+            throw new IllegalStateException("피드백을 가져오는데 실패했습니다.");
         }
 
         String cleaned = rawFeedbackText
@@ -111,5 +111,36 @@ public class LLMService {
                 .build();
 
         return SuccessResponse.of(llmFeedbackRes);
+    }
+
+    public SuccessResponse<LLMScoreRes> getScoreFeedback() {
+        String rawScoreText = llmClient.fetchScoresText().block();
+
+        if(rawScoreText == null || rawScoreText.isBlank()) {
+            throw new IllegalArgumentException("점수를 가져오는데 실패했습니다.");
+        }
+
+        String cleaned = rawScoreText
+                .replaceFirst(JSON_PARSER_PATTERN+"\\\"score\\\":\\\"", "")
+                .replaceAll(NEWLINE_PATTERN, "")
+                .replaceAll(JSON_SUFFIX_PATTERN, "");
+
+        Map<String, Integer> scoreMap = new LinkedHashMap<>();
+
+        Arrays.stream(cleaned.split("\\/100"))
+            .map(String::trim)
+            .filter(line -> !line.isBlank() && line.contains(":"))
+            .map(line -> line.split(":", 2))
+            .forEach(pair -> {
+                String label = pair[0].trim();
+                Integer value = Integer.parseInt(pair[1].trim());
+                scoreMap.put(label, value);
+            });
+
+        LLMScoreRes llmScoreRes = LLMScoreRes.builder()
+                .scoreMap(scoreMap)
+                .build();
+
+        return SuccessResponse.of(llmScoreRes);
     }
 }
