@@ -66,4 +66,28 @@ public class LLMInterviewClient {
                 .onErrorMap(WebClientResponseException.class,
                         e -> new RuntimeException("LLM 서버 호출 실패: " + e.getMessage()));
     }
+
+    /**
+     * 저장된 interview_feedback.txt 파일 내용을 FastAPI 서버로부터 가져옵니다.
+     */
+    public Mono<String> fetchFeedbacksText() {
+        return webClient.get()
+                .uri("/get-feedback-text")
+                .retrieve()
+                .bodyToMono(String.class)
+                .onErrorMap(WebClientResponseException.class,
+                        e -> new RuntimeException("LLM 서버 호출 실패: " + e.getMessage()));
+    }
+
+    /**
+     * 저장된 interview_scores.txt 파일 내용을 FastAPI 서버로부터 가져옵니다.
+     */
+    public Mono<String> fetchScoresText() {
+        return webClient.get()
+                .uri("/get-score-text")
+                .retrieve()
+                .bodyToMono(String.class)
+                .onErrorMap(WebClientResponseException.class,
+                        e -> new RuntimeException("LLM 서버 호출 실패: " + e.getMessage()));
+    }
 }
