@@ -51,11 +51,13 @@ public class LLMController implements LLMApi {
         return ResponseEntity.ok(llmService.processResumeQa(multipartFile));
     }
 
+    @Override
     @GetMapping("/feedbacks")
     public ResponseEntity<SuccessResponse<LLMFeedbackRes>> getEvaluateFeedback() {
         return ResponseEntity.ok(llmService.getEvaluateFeedback());
     }
 
+    @Override
     @GetMapping("/scores")
     public ResponseEntity<SuccessResponse<LLMScoreRes>> getScoreFeedback() {
         return ResponseEntity.ok(llmService.getScoreFeedback());
