@@ -6,6 +6,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import samsamoo.ai_mockly.domain.llm.application.LLMService;
+import samsamoo.ai_mockly.domain.llm.dto.response.LLMFeedbackRes;
 import samsamoo.ai_mockly.domain.llm.dto.response.LLMQuestionRes;
 import samsamoo.ai_mockly.global.common.Message;
 import samsamoo.ai_mockly.global.common.SuccessResponse;
@@ -47,5 +48,10 @@ public class LLMController implements LLMApi {
             throw new IllegalArgumentException("txt 파일만 업로드 가능합니다.");
         }
         return ResponseEntity.ok(llmService.processResumeQa(multipartFile));
+    }
+
+    @GetMapping("/feedbacks")
+    public ResponseEntity<SuccessResponse<LLMFeedbackRes>> getEvaluateFeedback() {
+        return ResponseEntity.ok(llmService.getEvaluateFeedback());
     }
 }
