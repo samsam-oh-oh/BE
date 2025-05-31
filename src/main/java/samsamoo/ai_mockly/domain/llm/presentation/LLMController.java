@@ -6,8 +6,8 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import samsamoo.ai_mockly.domain.llm.application.LLMService;
 import samsamoo.ai_mockly.domain.llm.dto.response.LLMQuestionRes;
+import samsamoo.ai_mockly.global.common.Message;
 import samsamoo.ai_mockly.global.common.SuccessResponse;
-import samsamoo.ai_mockly.infrastructure.external.llm.dto.LLMResponseDTO;
 
 @RequiredArgsConstructor
 @RestController
@@ -17,7 +17,7 @@ public class LLMController {
     private final LLMService llmService;
 
     @PostMapping("/upload/pdf")
-    public ResponseEntity<SuccessResponse<LLMResponseDTO>> uploadPdf(@RequestPart("file") MultipartFile multipartFile) {
+    public ResponseEntity<SuccessResponse<Message>> uploadPdf(@RequestPart("file") MultipartFile multipartFile) {
         if(multipartFile==null || multipartFile.isEmpty()) {
             throw new IllegalArgumentException("파일이 업로드 되지 않음");
         }

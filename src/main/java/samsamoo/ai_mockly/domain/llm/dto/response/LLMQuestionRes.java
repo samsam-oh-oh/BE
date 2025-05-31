@@ -9,7 +9,5 @@ import java.util.List;
 @Builder
 public class LLMQuestionRes {
 
-    private String status;
-
     private List<String> questionList;
 }

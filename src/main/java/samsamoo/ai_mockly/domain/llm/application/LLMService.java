@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import samsamoo.ai_mockly.domain.llm.dto.response.LLMQuestionRes;
+import samsamoo.ai_mockly.global.common.Message;
 import samsamoo.ai_mockly.global.common.SuccessResponse;
 import samsamoo.ai_mockly.infrastructure.external.llm.LLMInterviewClient;
 import samsamoo.ai_mockly.infrastructure.external.llm.dto.LLMResponseDTO;
@@ -20,18 +21,23 @@ public class LLMService {
 
     private final LLMInterviewClient llmClient;
 
-    private static final String JSON_PARSER_PATTERN = "\\{\\\"status\\\":\\\"success\\\",\\\"question\\\":\\\"(.*?)\\\"\\}";
+    private static final String JSON_PARSER_PATTERN = "^\\{\\\"status\\\":\\\"success\\\",\\\"questions\\\":\\\"";
     private static final String JSON_SUFFIX_PATTERN = "\\\"}$";
     private static final String NEWLINE_PATTERN = "\\\\n\\\\n";
     private static final String QUESTION_SPLIT_PATTERN = "\\d+\\. ";
 
     @Transactional
-    public SuccessResponse<LLMResponseDTO> processResumePdf(MultipartFile multipartFile) {
+    public SuccessResponse<Message> processResumePdf(MultipartFile multipartFile) {
         try {
             byte[] fileBytes = multipartFile.getBytes();
             String filename = multipartFile.getOriginalFilename();
             LLMResponseDTO response = llmClient.uploadPdf(fileBytes, filename).block();
-            return SuccessResponse.of(response);
+
+            Message message = Message.builder()
+                    .message(response.getMessage())
+                    .build();
+
+            return SuccessResponse.of(message);
         } catch (Exception e) {
             throw new RuntimeException("파일 처리 중 오류 발생 : " + e.getMessage());
         }
@@ -59,7 +65,6 @@ public class LLMService {
         }
 
         LLMQuestionRes llmQuestionRes = LLMQuestionRes.builder()
-                .status("success")
                 .questionList(questionList)
                 .build();
 
