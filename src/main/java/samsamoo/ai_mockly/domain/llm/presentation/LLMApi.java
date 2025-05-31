@@ -1,0 +1,52 @@
+package samsamoo.ai_mockly.domain.llm.presentation;
+
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestPart;
+import org.springframework.web.multipart.MultipartFile;
+import samsamoo.ai_mockly.domain.llm.dto.response.LLMQuestionRes;
+import samsamoo.ai_mockly.global.common.Message;
+import samsamoo.ai_mockly.global.common.SuccessResponse;
+import samsamoo.ai_mockly.global.exception.ErrorResponse;
+
+@Tag(name = "LLM API", description = "면접 LLM 관련 API입니다.")
+public interface LLMApi {
+
+    @Operation(summary = "이력서 pdf 보내기", description = "LLM에 이력서 등 pdf 파일을 보냅니다.")
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200", description = "pdf 전송 성공",
+                    content = {@Content(mediaType = "application/json", schema = @Schema(implementation = Message.class))}
+            ),
+            @ApiResponse(
+                    responseCode = "400", description = "pdf 전송 실패(잘못된 요청 방식)",
+                    content = {@Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class))}
+            )
+    })
+    @PostMapping(value = "/upload/pdf", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    ResponseEntity<SuccessResponse<Message>> uploadPdf(
+            @Parameter(description = "LLM에 보낼 pdf 파일을 입력하세요. key 값은 file 입니다.") @RequestPart("file") MultipartFile multipartFile);
+
+    @Operation(summary = "면접 질문 불러오기", description = "LLM에 받은 면접 질문을 불러옵니다.")
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200", description = "면접 질문 불러오기 성공",
+                    content = {@Content(mediaType = "application/json", schema = @Schema(implementation = LLMQuestionRes.class))}
+            ),
+            @ApiResponse(
+                    responseCode = "400", description = "면접 질문 불러오기 실패(잘못된 요청 방식)",
+                    content = {@Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class))}
+            )
+    })
+    @GetMapping("/questions")
+    ResponseEntity<SuccessResponse<LLMQuestionRes>> getGeneratedQuestions();
+}
