@@ -1,3 +1,8 @@
 spring:
   profiles:
     active: ["db", "jwt", "infra"]
+
+  servlet:
+    multipart:
+      max-file-size: 5MB
+      max-request-size: 5MB
