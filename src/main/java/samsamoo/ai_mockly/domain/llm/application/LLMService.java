@@ -133,8 +133,12 @@ public class LLMService {
             .map(line -> line.split(":", 2))
             .forEach(pair -> {
                 String label = pair[0].trim();
-                Integer value = Integer.parseInt(pair[1].trim());
-                scoreMap.put(label, value);
+                try {
+                    Integer value = Integer.parseInt(pair[1].trim());
+                    scoreMap.put(label, value);
+                } catch (NumberFormatException e) {
+                    throw new RuntimeException("점수 파싱 실패: " + label + "의 값이 올바른 숫자 형태가 아닙니다." + e.getMessage());
+                }
             });
 
         LLMScoreRes llmScoreRes = LLMScoreRes.builder()

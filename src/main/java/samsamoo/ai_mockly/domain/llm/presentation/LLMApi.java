@@ -65,7 +65,7 @@ public interface LLMApi {
     })
     @PostMapping(value = "/upload/qa", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     ResponseEntity<SuccessResponse<Message>> uploadQa(
-            @Parameter(description = "LLM에 보낼 txt 파일을 입력하세요. key 값은 SST_file입니다.", required = true) @RequestPart("STT_file") MultipartFile multipartFile);
+            @Parameter(description = "LLM에 보낼 txt 파일을 입력하세요. key 값은 STT_file입니다.", required = true) @RequestPart("STT_file") MultipartFile multipartFile);
 
     @Operation(summary = "면접 피드백 불러오기", description = "LLM에 받은 면접 피드백을 불러옵니다.")
     @ApiResponses(value = {
