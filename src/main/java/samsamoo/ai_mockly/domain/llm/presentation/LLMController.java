@@ -18,6 +18,13 @@ public class LLMController {
 
     @PostMapping("/upload/pdf")
     public ResponseEntity<SuccessResponse<LLMResponseDTO>> uploadPdf(@RequestPart("file") MultipartFile multipartFile) {
+        if(multipartFile==null || multipartFile.isEmpty()) {
+            throw new IllegalArgumentException("파일이 업로드 되지 않음");
+        }
+        String contentType = multipartFile.getContentType();
+        if(contentType == null || !contentType.startsWith("application/pdf")) {
+            throw new IllegalArgumentException("PDF 파일만 업로드 가능합니다.");
+        }
         return ResponseEntity.ok(llmService.processResumePdf(multipartFile));
     }
 

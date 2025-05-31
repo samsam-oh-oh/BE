@@ -8,6 +8,7 @@ import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClient;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Mono;
 import samsamoo.ai_mockly.infrastructure.external.llm.dto.LLMResponseDTO;
 
@@ -26,25 +27,17 @@ public class LLMInterviewClient {
      * 포트폴리오 PDF 파일을 FastAPI 서버에 업로드하여 질문 생성을 요청합니다.
      */
     public Mono<LLMResponseDTO> uploadPdf(byte[] fileBytes, String fileName) {
-        Resource resource = new ByteArrayResource(fileBytes) {
-            @Override
-            public String getFilename() {
-                return fileName;
-            }
-        };
-
-        return webClient.post()
-                .uri("/upload/pdf")
-                .contentType(MediaType.MULTIPART_FORM_DATA)
-                .body(BodyInserters.fromMultipartData("file", resource))
-                .retrieve()
-                .bodyToMono(LLMResponseDTO.class);
+        return uploadFile(fileBytes, fileName, "/upload/pdf");
     }
 
     /**
      * 사용자의 QA 텍스트 파일을 FastAPI 서버에 업로드하여 피드백과 점수를 요청합니다.
      */
     public Mono<LLMResponseDTO> uploadQa(byte[] fileBytes, String fileName) {
+        return uploadFile(fileBytes, fileName, "/upload/qa");
+    }
+
+    private Mono<LLMResponseDTO> uploadFile(byte[] fileBytes, String fileName, String endPoint) {
         Resource resource = new ByteArrayResource(fileBytes) {
             @Override
             public String getFilename() {
@@ -53,11 +46,13 @@ public class LLMInterviewClient {
         };
 
         return webClient.post()
-                .uri("/upload/qa")
+                .uri(endPoint)
                 .contentType(MediaType.MULTIPART_FORM_DATA)
                 .body(BodyInserters.fromMultipartData("file", resource))
                 .retrieve()
-                .bodyToMono(LLMResponseDTO.class);
+                .bodyToMono(LLMResponseDTO.class)
+                .onErrorMap(WebClientResponseException.class,
+                        e -> new RuntimeException("LLM 서버 호출 실패: " + e.getMessage()));
     }
 
     /**
@@ -67,6 +62,8 @@ public class LLMInterviewClient {
         return webClient.get()
                 .uri("/get-questions-text")
                 .retrieve()
-                .bodyToMono(String.class);
+                .bodyToMono(String.class)
+                .onErrorMap(WebClientResponseException.class,
+                        e -> new RuntimeException("LLM 서버 호출 실패: " + e.getMessage()));
     }
 }

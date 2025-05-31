@@ -20,6 +20,11 @@ public class LLMService {
 
     private final LLMInterviewClient llmClient;
 
+    private static final String JSON_PARSER_PATTERN = "\\{\\\"status\\\":\\\"success\\\",\\\"question\\\":\\\"(.*?)\\\"\\}";
+    private static final String JSON_SUFFIX_PATTERN = "\\\"}$";
+    private static final String NEWLINE_PATTERN = "\\\\n\\\\n";
+    private static final String QUESTION_SPLIT_PATTERN = "\\d+\\. ";
+
     @Transactional
     public SuccessResponse<LLMResponseDTO> processResumePdf(MultipartFile multipartFile) {
         try {
@@ -40,11 +45,11 @@ public class LLMService {
         }
 
         String cleaned = rawQuestionText
-                .replaceFirst("^\\{\\\"status\\\":\\\"success\\\",\\\"questions\\\":\\\"", "")
-                .replaceAll("\\\\n\\\\n", "")
-                .replaceAll("\\\"}$", "");
+                .replaceFirst(JSON_PARSER_PATTERN, "")
+                .replaceAll(NEWLINE_PATTERN, "")
+                .replaceAll(JSON_SUFFIX_PATTERN, "");
 
-        List<String> questionList = Arrays.stream(cleaned.split("\\d+\\. "))
+        List<String> questionList = Arrays.stream(cleaned.split(QUESTION_SPLIT_PATTERN))
                 .map(String::trim)
                 .filter(question -> !question.isBlank())
                 .collect(Collectors.toList());
