@@ -35,4 +35,17 @@ public class LLMController implements LLMApi {
     public ResponseEntity<SuccessResponse<LLMQuestionRes>> getGeneratedQuestions() {
         return ResponseEntity.ok(llmService.getGeneratedQuestion());
     }
+
+    @Override
+    @PostMapping(value = "/upload/qa", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<SuccessResponse<Message>> uploadQa(@RequestPart("STT_file") MultipartFile multipartFile) {
+        if(multipartFile==null || multipartFile.isEmpty()) {
+            throw new IllegalArgumentException("파일이 업로드 되지 않음");
+        }
+        String contentType = multipartFile.getContentType();
+        if(contentType == null || !contentType.startsWith("text/plain")) {
+            throw new IllegalArgumentException("txt 파일만 업로드 가능합니다.");
+        }
+        return ResponseEntity.ok(llmService.processResumeQa(multipartFile));
+    }
 }

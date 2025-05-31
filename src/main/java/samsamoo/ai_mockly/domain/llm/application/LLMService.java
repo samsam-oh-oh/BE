@@ -70,4 +70,21 @@ public class LLMService {
 
         return SuccessResponse.of(llmQuestionRes);
     }
+
+    @Transactional
+    public SuccessResponse<Message> processResumeQa(MultipartFile multipartFile) {
+        try {
+            byte[] fileBytes = multipartFile.getBytes();
+            String filename = multipartFile.getOriginalFilename();
+            LLMResponseDTO response = llmClient.uploadQa(fileBytes, filename).block();
+
+            Message message = Message.builder()
+                    .message(response.getMessage())
+                    .build();
+
+            return SuccessResponse.of(message);
+        } catch (Exception e) {
+            throw new RuntimeException("파일 처리 중 오류 발생 : " + e.getMessage());
+        }
+    }
 }

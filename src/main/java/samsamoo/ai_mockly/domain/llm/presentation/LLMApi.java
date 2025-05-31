@@ -34,7 +34,7 @@ public interface LLMApi {
     })
     @PostMapping(value = "/upload/pdf", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     ResponseEntity<SuccessResponse<Message>> uploadPdf(
-            @Parameter(description = "LLM에 보낼 pdf 파일을 입력하세요. key 값은 file 입니다.") @RequestPart("file") MultipartFile multipartFile);
+            @Parameter(description = "LLM에 보낼 pdf 파일을 입력하세요. key 값은 file 입니다.", required = true) @RequestPart("file") MultipartFile multipartFile);
 
     @Operation(summary = "면접 질문 불러오기", description = "LLM에 받은 면접 질문을 불러옵니다.")
     @ApiResponses(value = {
@@ -49,4 +49,19 @@ public interface LLMApi {
     })
     @GetMapping("/questions")
     ResponseEntity<SuccessResponse<LLMQuestionRes>> getGeneratedQuestions();
+
+    @Operation(summary = "답변 text 보내기", description = "LLM에 질문에 대한 답변 text 파일을 보냅니다.")
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200", description = "text 전송 성공",
+                    content = {@Content(mediaType = "application/json", schema = @Schema(implementation = Message.class))}
+            ),
+            @ApiResponse(
+                    responseCode = "400", description = "text 전송 실패(잘못된 요청 방식)",
+                    content = {@Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class))}
+            )
+    })
+    @PostMapping(value = "/upload/qa", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    ResponseEntity<SuccessResponse<Message>> uploadQa(
+            @Parameter(description = "LLM에 보낼 txt 파일을 입력하세요. key 값은 SST_file입니다.", required = true) @RequestPart("STT_file") MultipartFile multipartFile);
 }
