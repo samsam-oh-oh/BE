@@ -30,8 +30,8 @@ public class MemberController implements MemberApi {
 
     @Override
     @PatchMapping("/me/nickname")
-    public ResponseEntity<SuccessResponse<Message>> updateNickname(@LoginMember Member member, @RequestBody UpdateNicknameReq request) {
-        Long memberId = member.getId();
+    public ResponseEntity<SuccessResponse<Message>> updateNickname(@LoginMember Optional<Member> memberOpt, @RequestBody UpdateNicknameReq request) {
+        Long memberId = memberOpt.map(Member::getId).orElse(null);
         return ResponseEntity.ok(memberService.updateNickname(memberId, request.getNickname()));
     }
 
