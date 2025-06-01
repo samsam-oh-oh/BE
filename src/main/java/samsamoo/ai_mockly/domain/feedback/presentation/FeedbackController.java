@@ -42,6 +42,7 @@ public class FeedbackController implements FeedbackApi {
         return ResponseEntity.ok(feedbackService.getFeedbackContent(memberId, feedbackId));
     }
 
+    @Override
     @PostMapping("/contents/{feedbackId}/unlock")
     public ResponseEntity<SuccessResponse<Message>> unlockFeedback(@LoginMember Member member, @PathVariable Long feedbackId) {
         Long memberId = member.getId();
