@@ -21,10 +21,14 @@ public class MemberService {
     private final PointRepository pointRepository;
 
     public SuccessResponse<MemberInfoRes> getMemberInfo(Long memberId) {
+        if(memberId == null) {
+            throw new IllegalArgumentException("게스트는 사용할 수 없습니다. 먼저 로그인하세요.");
+        }
+
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new BadCredentialsException("해당 아이디를 갖는 유저가 없습니다."));
 
-        Integer totalPoint = pointRepository.sumActiveAmountByMemberId(memberId);
+        Integer totalPoint = pointRepository.sumActiveAmountByMember(member);
 
         MemberInfoRes memberInfoRes = MemberInfoRes.builder()
                 .nickname(member.getNickname())

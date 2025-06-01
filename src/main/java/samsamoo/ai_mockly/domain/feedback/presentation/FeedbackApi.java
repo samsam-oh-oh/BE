@@ -70,5 +70,6 @@ public interface FeedbackApi {
     })
     @GetMapping("/contents/{feedbackId}")
     ResponseEntity<SuccessResponse<FeedbackContentsRes>> getFeedbackContent(
+            @Parameter(description = "정보를 불러오고 싶은 회원의 Access Token을 입력하시오.", required = true) @LoginMember Member member,
             @Parameter(description = "불러올 피드백의 id를 입력하시오.", required = true) @PathVariable Long feedbackId);
 }

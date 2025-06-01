@@ -11,4 +11,6 @@ public interface ScoreRepository extends JpaRepository<Score, Long> {
     List<Score> findTop5ByHighScoreOrderByTotalScoreDesc(boolean highScore);
 
     List<Score> findAllByMember(Member member);
+
+    List<Score> findAllByMemberAndHighScore(Member member, boolean highScore);
 }

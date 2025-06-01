@@ -14,8 +14,8 @@ public class MemberInfoRes {
     @Schema(type = "String", example = "profile.png", description = "사용자의 프로필 이미지입니다.")
     private String profileImage;
 
-    @Schema(type = "Integer", example = "15", description = "사용자의 피드백 점수 중 최고점입니다. 최소 0, 최대 15입니다.")
-    private Integer maxScore;
+    @Schema(type = "Double", example = "100.0", description = "사용자의 피드백 점수 중 최고점입니다. 최소 0.0, 최대 100.0입니다.")
+    private Double maxScore;
 
     @Schema(type = "Integer", example = "15", description = "사용자의 총 포인트량 입니다.")
     private Integer pointAmount;
