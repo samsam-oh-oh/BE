@@ -8,9 +8,11 @@ import samsamoo.ai_mockly.domain.feedback.domain.Feedback;
 import samsamoo.ai_mockly.domain.feedback.domain.repository.FeedbackRepository;
 import samsamoo.ai_mockly.domain.feedback.dto.request.FeedbackSaveReq;
 import samsamoo.ai_mockly.domain.feedback.dto.response.FeedbackContentsRes;
+import samsamoo.ai_mockly.domain.feedbackaccess.FeedbackAccess;
 import samsamoo.ai_mockly.domain.feedbackaccess.repository.FeedbackAccessRepository;
 import samsamoo.ai_mockly.domain.member.domain.Member;
 import samsamoo.ai_mockly.domain.member.domain.repository.MemberRepository;
+import samsamoo.ai_mockly.domain.point.application.PointService;
 import samsamoo.ai_mockly.global.common.Message;
 import samsamoo.ai_mockly.global.common.SuccessResponse;
 
@@ -25,6 +27,7 @@ public class FeedbackService {
     private final FeedbackRepository feedbackRepository;
     private final MemberRepository memberRepository;
     private final FeedbackAccessRepository feedbackAccessRepository;
+    private final PointService pointService;
 
     @Transactional
     public SuccessResponse<Message> saveFeedback(Long memberId, FeedbackSaveReq feedbackSaveReq) {
@@ -102,8 +105,18 @@ public class FeedbackService {
 
         boolean alreadyAccess = feedbackAccessRepository.existsByViewerAndFeedback(viewer, feedback);
         if(alreadyAccess) {
-            throw new IllegalArgumentException("이미 접근한 피드백입니다.");
+            throw new IllegalArgumentException("이미 해제한 피드백입니다.");
         }
+
+        pointService.deductPoint(viewer.getId(), 5, "랭커 피드백 확인");
+        pointService.addPoint(owner.getId(), 10, "타 유저에게 피드백 제공");
+
+        FeedbackAccess feedbackAccess = FeedbackAccess.builder()
+                .viewer(viewer)
+                .feedback(feedback)
+                .build();
+
+        feedbackAccessRepository.save(feedbackAccess);
 
         Message message = Message.builder()
                 .message("플레이어가 피드백을 열 수 있습니다.")
