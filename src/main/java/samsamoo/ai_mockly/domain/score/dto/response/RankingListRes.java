@@ -16,4 +16,10 @@ public class RankingListRes {
 
     @Schema(type = "Double", example = "100.0", description = "멤버의 총 점수를 출력합니다.")
     private Double score;
+
+    @Schema(type = "String", example = "멤버의 **피드백 내용**입니다.", description = "멤버의 피드백 내용을 출력합니다.")
+    private String feedback;
+
+    @Schema(type = "Boolean", example = "true", description = "피드백의 잠금 해제 여부를 출력합니다. true면 해제된 상태입니다.")
+    private Boolean unlocked;
 }
