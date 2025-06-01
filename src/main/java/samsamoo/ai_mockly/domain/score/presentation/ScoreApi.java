@@ -25,7 +25,7 @@ public interface ScoreApi {
     @ApiResponses(value = {
             @ApiResponse(
                     responseCode = "200", description = "랭킹 리스트 조회 성공",
-                    content = {@Content(mediaType = "application/json", schema = @Schema(implementation = SuccessResponse.class))}
+                    content = {@Content(mediaType = "application/json", schema = @Schema(implementation = RankingListRes.class))}
             ),
             @ApiResponse(
                     responseCode = "400", description = "랭킹 리스트 조회 실패(잘못된 요청 방식)",
