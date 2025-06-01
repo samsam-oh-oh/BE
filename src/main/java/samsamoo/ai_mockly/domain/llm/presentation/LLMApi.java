@@ -98,5 +98,7 @@ public interface LLMApi {
             )
     })
     @GetMapping("/scores")
-    ResponseEntity<SuccessResponse<LLMScoreRes>> getScoreFeedback();
+    ResponseEntity<SuccessResponse<LLMScoreRes>> getScoreFeedback(
+            @Parameter(description = "피드백에 저장할 멤버의 AccessToken을 입력하세요. null은 게스트입니다.") @LoginMember Optional<Member> memberOpt
+    );
 }

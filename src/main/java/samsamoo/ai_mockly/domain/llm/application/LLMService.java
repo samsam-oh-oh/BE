@@ -11,12 +11,17 @@ import samsamoo.ai_mockly.domain.llm.dto.response.LLMQuestionRes;
 import samsamoo.ai_mockly.domain.llm.dto.response.LLMScoreRes;
 import samsamoo.ai_mockly.domain.member.domain.Member;
 import samsamoo.ai_mockly.domain.member.domain.repository.MemberRepository;
+import samsamoo.ai_mockly.domain.score.domain.Score;
+import samsamoo.ai_mockly.domain.score.domain.repository.ScoreRepository;
+import samsamoo.ai_mockly.domain.scoredetails.domain.Category;
+import samsamoo.ai_mockly.domain.scoredetails.domain.ScoreDetails;
 import samsamoo.ai_mockly.global.common.Message;
 import samsamoo.ai_mockly.global.common.SuccessResponse;
 import samsamoo.ai_mockly.infrastructure.external.llm.LLMInterviewClient;
 import samsamoo.ai_mockly.infrastructure.external.llm.dto.LLMResponseDTO;
 
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
@@ -32,6 +37,7 @@ public class LLMService {
     private static final String JSON_SUFFIX_PATTERN = "\\\"}$";
     private static final String NEWLINE_PATTERN = "\\\\n";
     private static final String SPLIT_PATTERN = "\\d+\\. ";
+    private final ScoreRepository scoreRepository;
 
     @Transactional
     public SuccessResponse<Message> processResumePdf(MultipartFile multipartFile) {
@@ -132,7 +138,8 @@ public class LLMService {
         return SuccessResponse.of(llmFeedbackRes);
     }
 
-    public SuccessResponse<LLMScoreRes> getScoreFeedback() {
+    @Transactional
+    public SuccessResponse<LLMScoreRes> getScoreFeedback(Long memberId) {
         String rawScoreText = llmClient.fetchScoresText().block();
 
         if(rawScoreText == null || rawScoreText.isBlank()) {
@@ -145,20 +152,63 @@ public class LLMService {
                 .replaceAll(JSON_SUFFIX_PATTERN, "");
 
         Map<String, Integer> scoreMap = new LinkedHashMap<>();
+        AtomicInteger totalScore = new AtomicInteger(0);
 
         Arrays.stream(cleaned.split("\\/100"))
-            .map(String::trim)
-            .filter(line -> !line.isBlank() && line.contains(":"))
-            .map(line -> line.split(":", 2))
-            .forEach(pair -> {
-                String label = pair[0].trim();
-                try {
+                .map(String::trim)
+                .filter(line -> !line.isBlank() && line.contains(":"))
+                .map(line -> line.split(":", 2))
+                .forEach(pair -> {
+                    String label = pair[0].trim();
                     Integer value = Integer.parseInt(pair[1].trim());
                     scoreMap.put(label, value);
-                } catch (NumberFormatException e) {
-                    throw new RuntimeException("점수 파싱 실패: " + label + "의 값이 올바른 숫자 형태가 아닙니다." + e.getMessage());
+                    totalScore.addAndGet(value);
+                });
+
+        if (memberId != null) {
+            Member member = memberRepository.findById(memberId)
+                    .orElseThrow(() -> new IllegalStateException("해당 유저가 없습니다."));
+
+            double avgScore = totalScore.get()/10.0;
+
+            Boolean highScore = member.getMaxScore() == null || member.getMaxScore() <= avgScore;
+
+            if(highScore) {
+                scoreRepository.findAllByMemberAndHighScore(member, true)
+                        .forEach(prevHighScore -> {
+                            prevHighScore.newHighScore(false);
+                            scoreRepository.save(prevHighScore);
+                        });
+            }
+
+            Score score = Score.builder()
+                    .member(member)
+                    .totalScore(avgScore)
+                    .highScore(highScore)
+                    .build();
+
+            for (Map.Entry<String, Integer> entry : scoreMap.entrySet()) {
+                try {
+                    Category category = Category.fromValue(entry.getKey());
+
+                    ScoreDetails scoreDetails = ScoreDetails.builder()
+                            .category(category)
+                            .scoreValue(entry.getValue())
+                            .build();
+
+                    score.addScoreDetails(scoreDetails);
+                } catch (Exception e) {
+                    throw new RuntimeException("점수 분류 실패: " + entry.getKey() + "는 정규화된 분류가 아닙니다." + e.getMessage());
                 }
-            });
+            }
+
+            scoreRepository.save(score);
+
+            if(highScore) {
+                member.updateMaxScore(avgScore);
+                memberRepository.save(member);
+            }
+        }
 
         LLMScoreRes llmScoreRes = LLMScoreRes.builder()
                 .scoreMap(scoreMap)

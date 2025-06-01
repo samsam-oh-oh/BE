@@ -3,6 +3,11 @@ package samsamoo.ai_mockly.domain.scoredetails.domain;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
+import java.util.Arrays;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+
 @Getter
 @AllArgsConstructor
 public enum Category {
@@ -20,4 +25,15 @@ public enum Category {
 
     private final String key;
     private final String value;
+
+    private static final Map<String, Category> VALUE_MAP = Arrays.stream(values())
+            .collect(Collectors.toMap(Category::getValue, Function.identity()));
+
+    public static Category fromValue(String value) {
+        Category category = VALUE_MAP.get(value);
+        if(category == null) {
+            throw new IllegalArgumentException("해당 value에 해당하는 Category가 없습니다: " + value);
+        }
+        return category;
+    }
 }

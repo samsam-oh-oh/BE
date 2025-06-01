@@ -22,6 +22,7 @@ public class Feedback extends BaseEntity {
     @JoinColumn(name = "member_id")
     private Member member;
 
+    @Column(columnDefinition = "TEXT")
     private String content;
 
     @Builder

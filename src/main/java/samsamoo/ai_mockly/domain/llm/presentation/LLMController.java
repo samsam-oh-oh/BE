@@ -64,7 +64,8 @@ public class LLMController implements LLMApi {
 
     @Override
     @GetMapping("/scores")
-    public ResponseEntity<SuccessResponse<LLMScoreRes>> getScoreFeedback() {
-        return ResponseEntity.ok(llmService.getScoreFeedback());
+    public ResponseEntity<SuccessResponse<LLMScoreRes>> getScoreFeedback(@LoginMember Optional<Member> memberOpt) {
+        Long memberId = memberOpt.map(Member::getId).orElse(null);
+        return ResponseEntity.ok(llmService.getScoreFeedback(memberId));
     }
 }
