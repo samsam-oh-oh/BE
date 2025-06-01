@@ -14,16 +14,18 @@ import samsamoo.ai_mockly.global.common.SuccessResponse;
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/points")
-public class PointController {
+public class PointController implements PointApi {
 
     private final PointService pointService;
 
+    @Override
     @GetMapping("/me")
     public ResponseEntity<SuccessResponse<Integer>> getCurrentAmount(@LoginMember Member member) {
         Long memberId = member.getId();
         return ResponseEntity.ok(pointService.getCurrentAmount(memberId));
     }
 
+    @Override
     @PostMapping("/add")
     public ResponseEntity<SuccessResponse<Message>> addPoint(@LoginMember Member member, @Valid @RequestBody PointAmountReq pointAmountReq) {
         Long memberId = member.getId();
@@ -32,11 +34,12 @@ public class PointController {
         return ResponseEntity.ok(pointService.addPoint(memberId, amount, reason));
     }
 
+    @Override
     @PostMapping("/deduct")
-    public ResponseEntity<SuccessResponse<Message>> deductPoint(@LoginMember Member member, @Valid @RequestBody PointAmountReq pointAmountReqt) {
+    public ResponseEntity<SuccessResponse<Message>> deductPoint(@LoginMember Member member, @Valid @RequestBody PointAmountReq pointAmountReq) {
         Long memberId = member.getId();
-        Integer amount = pointAmountReqt.getPointAmount();
-        String reason = pointAmountReqt.getReason();
+        Integer amount = pointAmountReq.getPointAmount();
+        String reason = pointAmountReq.getReason();
         return ResponseEntity.ok(pointService.deductPoint(memberId, amount, reason));
     }
 }

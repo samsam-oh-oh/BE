@@ -11,5 +11,5 @@ public interface FeedbackRepository extends JpaRepository<Feedback, Long> {
 
     List<Feedback> findAllByMember(Member member);
 
-    Optional<Feedback> findByMember(Member member);
+    Optional<Feedback> findTopByMemberOrderByCreatedAtDesc(Member member);
 }
