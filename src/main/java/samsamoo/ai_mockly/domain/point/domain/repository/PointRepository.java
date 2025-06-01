@@ -10,8 +10,8 @@ import java.util.List;
 
 public interface PointRepository extends JpaRepository<Point, Long> {
 
-    @Query("SELECT COALESCE(SUM(p.amount), 0) FROM Point p WHERE p.member.id = :memberId AND p.state = 'ACTIVE'")
-    Integer sumActiveAmountByMemberId(@Param("memberId") Long memberId);
+    @Query("SELECT COALESCE(SUM(p.amount), 0) FROM Point p WHERE p.member = :member AND p.state = 'ACTIVE'")
+    Integer sumActiveAmountByMember(@Param("member") Member member);
 
     List<Point> findAllByMember(Member member);
 }
