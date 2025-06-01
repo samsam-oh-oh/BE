@@ -9,8 +9,12 @@ import samsamoo.ai_mockly.domain.llm.application.LLMService;
 import samsamoo.ai_mockly.domain.llm.dto.response.LLMFeedbackRes;
 import samsamoo.ai_mockly.domain.llm.dto.response.LLMQuestionRes;
 import samsamoo.ai_mockly.domain.llm.dto.response.LLMScoreRes;
+import samsamoo.ai_mockly.domain.member.domain.Member;
+import samsamoo.ai_mockly.global.annotation.LoginMember;
 import samsamoo.ai_mockly.global.common.Message;
 import samsamoo.ai_mockly.global.common.SuccessResponse;
+
+import java.util.Optional;
 
 @RequiredArgsConstructor
 @RestController
@@ -53,13 +57,15 @@ public class LLMController implements LLMApi {
 
     @Override
     @GetMapping("/feedbacks")
-    public ResponseEntity<SuccessResponse<LLMFeedbackRes>> getEvaluateFeedback() {
-        return ResponseEntity.ok(llmService.getEvaluateFeedback());
+    public ResponseEntity<SuccessResponse<LLMFeedbackRes>> getEvaluateFeedback(@LoginMember Optional<Member> memberOpt) {
+        Long memberId = memberOpt.map(Member::getId).orElse(null);
+        return ResponseEntity.ok(llmService.getEvaluateFeedback(memberId));
     }
 
     @Override
     @GetMapping("/scores")
-    public ResponseEntity<SuccessResponse<LLMScoreRes>> getScoreFeedback() {
-        return ResponseEntity.ok(llmService.getScoreFeedback());
+    public ResponseEntity<SuccessResponse<LLMScoreRes>> getScoreFeedback(@LoginMember Optional<Member> memberOpt) {
+        Long memberId = memberOpt.map(Member::getId).orElse(null);
+        return ResponseEntity.ok(llmService.getScoreFeedback(memberId));
     }
 }

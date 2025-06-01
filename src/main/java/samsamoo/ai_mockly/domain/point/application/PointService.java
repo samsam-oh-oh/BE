@@ -62,4 +62,39 @@ public class PointService {
 
         return SuccessResponse.of(message);
     }
+
+    @Transactional
+    public SuccessResponse<Message> deductPoint(Long memberId, Integer amount, String reason) {
+        Member member = memberRepository.findById(memberId)
+                .orElseThrow(() -> new BadCredentialsException("해당 아이디를 갖는 유저가 없습니다."));
+
+        if (amount < 0) {
+            throw new IllegalArgumentException("차감할 포인트는 음수가 될 수 없습니다.");
+        }
+
+        int currentPoint = pointRepository.sumActiveAmountByMember(member);
+
+        if (currentPoint < amount) {
+            throw new IllegalArgumentException("차감할 포인트보다 적은 포인트를 차감할 수 없습니다.");
+        }
+
+        if(reason == null || reason.isBlank()) {
+            reason = "기타";
+        }
+
+        Point point = Point.builder()
+                .member(member)
+                .amount(-amount)
+                .type(reason)
+                .state(State.ACTIVE)
+                .build();
+
+        pointRepository.save(point);
+
+        Message message = Message.builder()
+                .message(amount + "점이 차감되었습니다.")
+                .build();
+
+        return SuccessResponse.of(message);
+    }
 }

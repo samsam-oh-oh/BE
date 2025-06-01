@@ -27,7 +27,7 @@ public class Score extends BaseEntity {
     private Member member;
 
     @Column(name = "total_score", nullable = false)
-    private Integer totalScore;
+    private Double totalScore;
 
     @Column(name = "high_score", nullable = false)
     private Boolean highScore;
@@ -36,7 +36,7 @@ public class Score extends BaseEntity {
     private List<ScoreDetails> scoreDetails = new ArrayList<ScoreDetails>();
 
     @Builder
-    public Score(Member member, Integer totalScore, Boolean highScore) {
+    public Score(Member member, Double totalScore, Boolean highScore) {
         this.member = member;
         this.totalScore = totalScore;
         this.highScore = highScore;
@@ -45,5 +45,9 @@ public class Score extends BaseEntity {
     public void addScoreDetails(ScoreDetails scoreDetails) {
         this.scoreDetails.add(scoreDetails);
         scoreDetails.setScore(this);
+    }
+
+    public void newHighScore(Boolean highScore) {
+        this.highScore = highScore;
     }
 }

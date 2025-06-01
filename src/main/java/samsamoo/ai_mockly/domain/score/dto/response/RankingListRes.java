@@ -14,6 +14,6 @@ public class RankingListRes {
     @Schema(type = "String", example = "닉네임", description = "멤버의 닉네임을 출력합니다.")
     private String nickname;
 
-    @Schema(type = "Integer", example = "15", description = "멤버의 총 점수를 출력합니다.")
-    private Integer score;
+    @Schema(type = "Double", example = "100.0", description = "멤버의 총 점수를 출력합니다.")
+    private Double score;
 }

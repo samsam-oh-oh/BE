@@ -80,7 +80,7 @@ public class AuthService {
                 .kakaoId(memberDTO.getKakaoId())
                 .nickname("|KAKAO" + (int)(Math.random() * 9000 + 1000))
                 .profileImage(null)
-                .maxScore(0)
+                .maxScore(0.0)
                 .build();
 
         Point point = Point.builder()

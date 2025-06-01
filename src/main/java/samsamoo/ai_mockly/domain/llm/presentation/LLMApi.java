@@ -16,9 +16,13 @@ import org.springframework.web.multipart.MultipartFile;
 import samsamoo.ai_mockly.domain.llm.dto.response.LLMFeedbackRes;
 import samsamoo.ai_mockly.domain.llm.dto.response.LLMQuestionRes;
 import samsamoo.ai_mockly.domain.llm.dto.response.LLMScoreRes;
+import samsamoo.ai_mockly.domain.member.domain.Member;
+import samsamoo.ai_mockly.global.annotation.LoginMember;
 import samsamoo.ai_mockly.global.common.Message;
 import samsamoo.ai_mockly.global.common.SuccessResponse;
 import samsamoo.ai_mockly.global.exception.ErrorResponse;
+
+import java.util.Optional;
 
 @Tag(name = "LLM API", description = "면접 LLM 관련 API입니다.")
 public interface LLMApi {
@@ -79,7 +83,8 @@ public interface LLMApi {
             )
     })
     @GetMapping("/feedbacks")
-    ResponseEntity<SuccessResponse<LLMFeedbackRes>> getEvaluateFeedback();
+    ResponseEntity<SuccessResponse<LLMFeedbackRes>> getEvaluateFeedback(
+            @Parameter(description = "피드백에 저장할 멤버의 AccessToken을 입력하세요. null은 게스트입니다.") @LoginMember Optional<Member> memberOpt);
 
     @Operation(summary = "면접 점수 불러오기", description = "LLM에 받은 면접 점수를 불러옵니다.")
     @ApiResponses(value = {
@@ -93,5 +98,7 @@ public interface LLMApi {
             )
     })
     @GetMapping("/scores")
-    ResponseEntity<SuccessResponse<LLMScoreRes>> getScoreFeedback();
+    ResponseEntity<SuccessResponse<LLMScoreRes>> getScoreFeedback(
+            @Parameter(description = "피드백에 저장할 멤버의 AccessToken을 입력하세요. null은 게스트입니다.") @LoginMember Optional<Member> memberOpt
+    );
 }
