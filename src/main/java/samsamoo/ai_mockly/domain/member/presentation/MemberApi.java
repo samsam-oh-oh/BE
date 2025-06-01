@@ -18,6 +18,8 @@ import samsamoo.ai_mockly.global.common.Message;
 import samsamoo.ai_mockly.global.common.SuccessResponse;
 import samsamoo.ai_mockly.global.exception.ErrorResponse;
 
+import java.util.Optional;
+
 @Tag(name = "Member API", description = "회원 관련 API입니다.")
 public interface MemberApi {
 
@@ -34,7 +36,7 @@ public interface MemberApi {
     })
     @GetMapping("/me")
     ResponseEntity<SuccessResponse<MemberInfoRes>> getMemberInfo(
-            @Parameter(description = "정보를 불러오고 싶은 회원의 Access Token을 입력하시오.", required = true) @LoginMember Member member);
+            @Parameter(description = "정보를 불러오고 싶은 회원의 Access Token을 입력하시오.", required = true) @LoginMember Optional<Member> member);
 
     @Operation(summary = "닉네임 수정", description = "닉네임을 수정합니다.")
     @ApiResponses(value = {

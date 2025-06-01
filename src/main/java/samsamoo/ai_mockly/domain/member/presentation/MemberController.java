@@ -12,6 +12,8 @@ import samsamoo.ai_mockly.global.annotation.LoginMember;
 import samsamoo.ai_mockly.global.common.Message;
 import samsamoo.ai_mockly.global.common.SuccessResponse;
 
+import java.util.Optional;
+
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/members")
@@ -21,8 +23,8 @@ public class MemberController implements MemberApi {
 
     @Override
     @GetMapping("/me")
-    public ResponseEntity<SuccessResponse<MemberInfoRes>> getMemberInfo(@LoginMember Member member) {
-        Long memberId = member.getId();
+    public ResponseEntity<SuccessResponse<MemberInfoRes>> getMemberInfo(@LoginMember Optional<Member> memberOpt) {
+        Long memberId = memberOpt.map(Member::getId).orElse(null);
         return ResponseEntity.ok(memberService.getMemberInfo(memberId));
     }
 
