@@ -4,9 +4,13 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
+import samsamoo.ai_mockly.domain.feedback.domain.Feedback;
+import samsamoo.ai_mockly.domain.feedback.domain.repository.FeedbackRepository;
 import samsamoo.ai_mockly.domain.llm.dto.response.LLMFeedbackRes;
 import samsamoo.ai_mockly.domain.llm.dto.response.LLMQuestionRes;
 import samsamoo.ai_mockly.domain.llm.dto.response.LLMScoreRes;
+import samsamoo.ai_mockly.domain.member.domain.Member;
+import samsamoo.ai_mockly.domain.member.domain.repository.MemberRepository;
 import samsamoo.ai_mockly.global.common.Message;
 import samsamoo.ai_mockly.global.common.SuccessResponse;
 import samsamoo.ai_mockly.infrastructure.external.llm.LLMInterviewClient;
@@ -21,6 +25,8 @@ import java.util.stream.Collectors;
 public class LLMService {
 
     private final LLMInterviewClient llmClient;
+    private final MemberRepository memberRepository;
+    private final FeedbackRepository feedbackRepository;
 
     private static final String JSON_PARSER_PATTERN = "^\\{\\\"status\\\":\\\"success\\\",";
     private static final String JSON_SUFFIX_PATTERN = "\\\"}$";
@@ -89,7 +95,8 @@ public class LLMService {
         }
     }
 
-    public SuccessResponse<LLMFeedbackRes> getEvaluateFeedback() {
+    @Transactional
+    public SuccessResponse<LLMFeedbackRes> getEvaluateFeedback(Long memberId) {
         String rawFeedbackText = llmClient.fetchFeedbacksText().block();
 
         if(rawFeedbackText == null || rawFeedbackText.isBlank()) {
@@ -100,6 +107,18 @@ public class LLMService {
                 .replaceFirst(JSON_PARSER_PATTERN+"\\\"feedback\\\":\\\"", "")
                 .replaceAll(NEWLINE_PATTERN, "")
                 .replaceAll(JSON_SUFFIX_PATTERN, "");
+
+        if(memberId != null) {
+            Member member = memberRepository.findById(memberId)
+                    .orElseThrow(() -> new IllegalStateException("해당 유저가 없습니다."));
+
+            Feedback feedback = Feedback.builder()
+                    .member(member)
+                    .content(cleaned)
+                    .build();
+
+            feedbackRepository.save(feedback);
+        }
 
         List<String> feedbackList = Arrays.stream(cleaned.split(SPLIT_PATTERN))
                 .map(String::trim)
