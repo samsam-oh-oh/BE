@@ -67,11 +67,6 @@ public class PointService {
             throw new IllegalArgumentException("차감할 포인트는 음수가 될 수 없습니다.");
         }
 
-        int currentPoint = pointRepository.sumActiveAmountByMember(member);
-        if(currentPoint < amount) {
-            throw new IllegalArgumentException("적립한 포인트보다 적은 포인트를 차감할 수 없습니다.");
-        }
-
         if(reason == null || reason.isBlank()) {
             reason = "기타";
         }
