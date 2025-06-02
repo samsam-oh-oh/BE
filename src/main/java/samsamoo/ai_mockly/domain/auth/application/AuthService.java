@@ -1,6 +1,7 @@
 package samsamoo.ai_mockly.domain.auth.application;
 
 import com.auth0.jwt.JWT;
+import com.auth0.jwt.exceptions.TokenExpiredException;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -11,6 +12,7 @@ import samsamoo.ai_mockly.domain.auth.dto.request.LoginReq;
 import samsamoo.ai_mockly.domain.auth.dto.request.LogoutReq;
 import samsamoo.ai_mockly.domain.auth.dto.response.DuplicateCheckRes;
 import samsamoo.ai_mockly.domain.auth.dto.response.LoginRes;
+import samsamoo.ai_mockly.domain.auth.dto.response.ReissueRes;
 import samsamoo.ai_mockly.domain.feedback.domain.Feedback;
 import samsamoo.ai_mockly.domain.feedback.domain.repository.FeedbackRepository;
 import samsamoo.ai_mockly.domain.member.domain.Member;
@@ -152,5 +154,25 @@ public class AuthService {
                 .build();
 
         return SuccessResponse.of(message);
+    }
+
+    public SuccessResponse<ReissueRes> reissue(String refreshToken) {
+        DecodedJWT decodedJWT = JWT.decode(refreshToken);
+        Instant expiredAt = decodedJWT.getExpiresAt().toInstant();
+        if (!jwtTokenProvider.isTokenValid(refreshToken))
+            throw new TokenExpiredException("유효하지 않은 리프레시 토큰입니다.", expiredAt);
+
+
+        String nickname = redisUtil.getData(RT_PREFIX + refreshToken);
+        Member member = memberRepository.findByNickname(nickname)
+                .orElseThrow(() -> new IllegalArgumentException("해당 닉네임을 갖는 유저가 없습니다."));
+
+        String accessToken = jwtTokenProvider.createAccessToken(member);
+
+        ReissueRes reissueRes = ReissueRes.builder()
+                .accessToken(accessToken)
+                .build();
+
+        return SuccessResponse.of(reissueRes);
     }
 }

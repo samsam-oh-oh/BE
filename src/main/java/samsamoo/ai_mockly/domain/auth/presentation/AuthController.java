@@ -9,6 +9,7 @@ import samsamoo.ai_mockly.domain.auth.dto.request.LoginReq;
 import samsamoo.ai_mockly.domain.auth.dto.request.LogoutReq;
 import samsamoo.ai_mockly.domain.auth.dto.response.DuplicateCheckRes;
 import samsamoo.ai_mockly.domain.auth.dto.response.LoginRes;
+import samsamoo.ai_mockly.domain.auth.dto.response.ReissueRes;
 import samsamoo.ai_mockly.domain.member.domain.Member;
 import samsamoo.ai_mockly.global.annotation.LoginMember;
 import samsamoo.ai_mockly.global.common.Message;
@@ -45,5 +46,11 @@ public class AuthController implements AuthApi {
     public ResponseEntity<SuccessResponse<Message>> exit(@LoginMember Member member) {
         Long memberId = member.getId();
         return ResponseEntity.ok(authService.exit(memberId));
+    }
+
+    @Override
+    @GetMapping("/reissue")
+    public ResponseEntity<SuccessResponse<ReissueRes>> reissue(@RequestParam(value = "refreshToken") String refreshToken) {
+        return ResponseEntity.ok(authService.reissue(refreshToken));
     }
 }
