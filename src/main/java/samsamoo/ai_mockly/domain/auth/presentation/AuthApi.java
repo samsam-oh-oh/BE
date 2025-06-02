@@ -15,6 +15,7 @@ import samsamoo.ai_mockly.domain.auth.dto.request.LoginReq;
 import samsamoo.ai_mockly.domain.auth.dto.request.LogoutReq;
 import samsamoo.ai_mockly.domain.auth.dto.response.DuplicateCheckRes;
 import samsamoo.ai_mockly.domain.auth.dto.response.LoginRes;
+import samsamoo.ai_mockly.domain.auth.dto.response.ReissueRes;
 import samsamoo.ai_mockly.domain.member.domain.Member;
 import samsamoo.ai_mockly.global.annotation.LoginMember;
 import samsamoo.ai_mockly.global.common.Message;
@@ -86,4 +87,19 @@ public interface AuthApi {
     @DeleteMapping("/exit")
     ResponseEntity<SuccessResponse<Message>> exit(
             @Parameter(description = "탈퇴하고 싶은 회원의 Access Token을 입력하시오.", required = true) @LoginMember Member member);
+
+    @Operation(summary = "토큰 재발급", description = "RefreshToken으로 AccessToken을 재발급합니다.")
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200", description = "토큰 재발급 성공",
+                    content = {@Content(mediaType = "application/json", schema = @Schema(implementation = ReissueRes.class))}
+            ),
+            @ApiResponse(
+                    responseCode = "400", description = "토큰 재발급 실패(잘못된 요청 방식)",
+                    content = {@Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class))}
+            )
+    })
+    @GetMapping("/reissue")
+    ResponseEntity<SuccessResponse<ReissueRes>> reissue(
+            @Parameter(description = "AccessToken을 재발급할 RefreshToken을 입력하세요.", required = true) @RequestParam(value = "refreshToken") String refreshToken);
 }
