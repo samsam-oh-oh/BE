@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import samsamoo.ai_mockly.domain.auth.application.AuthService;
+import samsamoo.ai_mockly.domain.auth.dto.request.AdminLoginReq;
 import samsamoo.ai_mockly.domain.auth.dto.request.LoginReq;
 import samsamoo.ai_mockly.domain.auth.dto.request.LogoutReq;
 import samsamoo.ai_mockly.domain.auth.dto.response.DuplicateCheckRes;
@@ -52,5 +53,10 @@ public class AuthController implements AuthApi {
     @GetMapping("/reissue")
     public ResponseEntity<SuccessResponse<ReissueRes>> reissue(@RequestParam(value = "refreshToken") String refreshToken) {
         return ResponseEntity.ok(authService.reissue(refreshToken));
+    }
+
+    @PostMapping("/login/admin")
+    public ResponseEntity<SuccessResponse<LoginRes>> loginAdmin(@Valid @RequestBody AdminLoginReq adminLoginReq) {
+        return ResponseEntity.ok(authService.loginAdmin(adminLoginReq));
     }
 }
