@@ -1,16 +1,19 @@
 package samsamoo.ai_mockly.domain.auth.application;
 
 import com.auth0.jwt.JWT;
+import com.auth0.jwt.exceptions.TokenExpiredException;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import samsamoo.ai_mockly.domain.auth.dto.request.AdminLoginReq;
 import samsamoo.ai_mockly.domain.auth.dto.request.LoginReq;
 import samsamoo.ai_mockly.domain.auth.dto.request.LogoutReq;
 import samsamoo.ai_mockly.domain.auth.dto.response.DuplicateCheckRes;
 import samsamoo.ai_mockly.domain.auth.dto.response.LoginRes;
+import samsamoo.ai_mockly.domain.auth.dto.response.ReissueRes;
 import samsamoo.ai_mockly.domain.feedback.domain.Feedback;
 import samsamoo.ai_mockly.domain.feedback.domain.repository.FeedbackRepository;
 import samsamoo.ai_mockly.domain.member.domain.Member;
@@ -38,6 +41,8 @@ public class AuthService {
 
     @Value("${jwt.refresh.expiration}")
     private Long refreshExpiration;
+    @Value("${app.admin.code}")
+    private String ADMIN_CODE;
 
     private static String RT_PREFIX = "RT_";
     private static String BL_AT_PREFIX = "BL_AT_";
@@ -152,5 +157,51 @@ public class AuthService {
                 .build();
 
         return SuccessResponse.of(message);
+    }
+
+    public SuccessResponse<ReissueRes> reissue(String refreshToken) {
+        DecodedJWT decodedJWT = JWT.decode(refreshToken);
+        Instant expiredAt = decodedJWT.getExpiresAt().toInstant();
+        if (!jwtTokenProvider.isTokenValid(refreshToken))
+            throw new TokenExpiredException("유효하지 않은 리프레시 토큰입니다.", expiredAt);
+
+
+        String nickname = redisUtil.getData(RT_PREFIX + refreshToken);
+        Member member = memberRepository.findByNickname(nickname)
+                .orElseThrow(() -> new IllegalArgumentException("해당 닉네임을 갖는 유저가 없습니다."));
+
+        String accessToken = jwtTokenProvider.createAccessToken(member);
+
+        ReissueRes reissueRes = ReissueRes.builder()
+                .accessToken(accessToken)
+                .build();
+
+        return SuccessResponse.of(reissueRes);
+    }
+
+    @Transactional
+    public SuccessResponse<LoginRes> loginAdmin(AdminLoginReq adminLoginReq) {
+        String inputAdminCode = adminLoginReq.getAdminCode();
+
+        if(!inputAdminCode.equals(ADMIN_CODE))
+            throw new IllegalArgumentException("관리자 코드가 일치하지 않습니다.");
+
+        Member member = memberRepository.findByNickname("admin")
+                .orElseThrow(() -> new IllegalArgumentException("admin이 존재하지 않습니다."));
+
+        boolean isNewMember = false;
+
+        String accessToken = jwtTokenProvider.createAccessToken(member);
+        String refreshToken = jwtTokenProvider.createRefreshToken();
+
+        redisUtil.setDataExpire(RT_PREFIX + refreshToken, member.getNickname(), refreshExpiration);
+
+        LoginRes loginRes = LoginRes.builder()
+                .accessToken(accessToken)
+                .refreshToken(refreshToken)
+                .isNewMember(isNewMember)
+                .build();
+
+        return SuccessResponse.of(loginRes);
     }
 }
