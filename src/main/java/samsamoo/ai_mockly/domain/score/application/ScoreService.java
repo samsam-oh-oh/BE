@@ -27,9 +27,6 @@ public class ScoreService {
     private final MemberRepository memberRepository;
 
     public SuccessResponse<List<RankingListRes>> getRankingList(Long memberId) {
-        Member member = memberRepository.findById(memberId)
-                .orElseThrow(() -> new IllegalArgumentException("해당 아이디를 갖는 유저가 없습니다."));
-
         List<Score> scoreList = scoreRepository.findTop5ByHighScoreOrderByTotalScoreDesc(true);
 
         List<RankingListRes> rankingList = scoreList.stream()
@@ -40,6 +37,9 @@ public class ScoreService {
                     Boolean unlocked = false;
 
                     if(memberId != null && feedback != null) {
+                        Member member = memberRepository.findById(memberId)
+                                .orElseThrow(() -> new IllegalArgumentException("해당 아이디를 갖는 유저가 없습니다."));
+
                         unlocked = feedback.getMember().equals(member) || feedbackAccessRepository.existsByViewerAndFeedback(member, feedback);
                     }
 
