@@ -34,7 +34,7 @@ public class SecurityConfig {
             "/scores/**",
             "/feedbacks/**",
             "/llm/**",
-            "/point/**"
+            "/points/**"
     };
 
     @Bean
