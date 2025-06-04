@@ -6,7 +6,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import samsamoo.ai_mockly.domain.llm.application.LLMService;
+import samsamoo.ai_mockly.domain.llm.dto.response.LLMFeedbackRes;
 import samsamoo.ai_mockly.domain.llm.dto.response.LLMQuestionRes;
+import samsamoo.ai_mockly.domain.llm.dto.response.LLMScoreRes;
 import samsamoo.ai_mockly.domain.member.domain.Member;
 import samsamoo.ai_mockly.global.annotation.LoginMember;
 import samsamoo.ai_mockly.global.common.Message;
@@ -54,17 +56,15 @@ public class LLMController implements LLMApi {
         return ResponseEntity.ok(llmService.processResumeQa(multipartFile, memberId));
     }
 
-//    @Override
-//    @GetMapping("/feedbacks")
-//    public ResponseEntity<SuccessResponse<LLMFeedbackRes>> getEvaluateFeedback(@LoginMember Optional<Member> memberOpt) {
-//        Long memberId = memberOpt.map(Member::getId).orElse(null);
-//        return ResponseEntity.ok(llmService.getEvaluateFeedback(memberId));
-//    }
-//
-//    @Override
-//    @GetMapping("/scores")
-//    public ResponseEntity<SuccessResponse<LLMScoreRes>> getScoreFeedback(@LoginMember Optional<Member> memberOpt) {
-//        Long memberId = memberOpt.map(Member::getId).orElse(null);
-//        return ResponseEntity.ok(llmService.getScoreFeedback(memberId));
-//    }
+    @Override
+    @GetMapping("/feedbacks")
+    public ResponseEntity<SuccessResponse<LLMFeedbackRes>> getFeedbackResult() {
+        return ResponseEntity.ok(llmService.getFeedbackResult());
+    }
+
+    @Override
+    @GetMapping("/scores")
+    public ResponseEntity<SuccessResponse<LLMScoreRes>> getScoreResult() {
+        return ResponseEntity.ok(llmService.getScoreResult());
+    }
 }

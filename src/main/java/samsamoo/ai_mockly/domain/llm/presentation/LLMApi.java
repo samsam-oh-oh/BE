@@ -13,7 +13,9 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.multipart.MultipartFile;
+import samsamoo.ai_mockly.domain.llm.dto.response.LLMFeedbackRes;
 import samsamoo.ai_mockly.domain.llm.dto.response.LLMQuestionRes;
+import samsamoo.ai_mockly.domain.llm.dto.response.LLMScoreRes;
 import samsamoo.ai_mockly.domain.member.domain.Member;
 import samsamoo.ai_mockly.global.annotation.LoginMember;
 import samsamoo.ai_mockly.global.common.Message;
@@ -70,34 +72,31 @@ public interface LLMApi {
             @Parameter(description = "LLM 결과를 저장할 멤버의 AccessToken을 입력하세요. null은 게스트입니다.") @LoginMember Optional<Member> member,
             @Parameter(description = "LLM에 보낼 txt 파일을 입력하세요. key 값은 STT_file입니다.", required = true) @RequestPart("STT_file") MultipartFile multipartFile);
 
-//    @Operation(summary = "면접 피드백 불러오기", description = "LLM에 받은 면접 피드백을 불러옵니다.")
-//    @ApiResponses(value = {
-//            @ApiResponse(
-//                    responseCode = "200", description = "면접 피드백 불러오기 성공",
-//                    content = {@Content(mediaType = "application/json", schema = @Schema(implementation = LLMFeedbackRes.class))}
-//            ),
-//            @ApiResponse(
-//                    responseCode = "400", description = "면접 피드백 불러오기 실패(잘못된 요청 방식)",
-//                    content = {@Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class))}
-//            )
-//    })
-//    @GetMapping("/feedbacks")
-//    ResponseEntity<SuccessResponse<LLMFeedbackRes>> getEvaluateFeedback(
-//            @Parameter(description = "피드백에 저장할 멤버의 AccessToken을 입력하세요. null은 게스트입니다.") @LoginMember Optional<Member> memberOpt);
-//
-//    @Operation(summary = "면접 점수 불러오기", description = "LLM에 받은 면접 점수를 불러옵니다.")
-//    @ApiResponses(value = {
-//            @ApiResponse(
-//                    responseCode = "200", description = "면접 점수 불러오기 성공",
-//                    content = {@Content(mediaType = "application/json", schema = @Schema(implementation = LLMScoreRes.class))}
-//            ),
-//            @ApiResponse(
-//                    responseCode = "400", description = "면접 점수 불러오기 실패(잘못된 요청 방식)",
-//                    content = {@Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class))}
-//            )
-//    })
-//    @GetMapping("/scores")
-//    ResponseEntity<SuccessResponse<LLMScoreRes>> getScoreFeedback(
-//            @Parameter(description = "피드백에 저장할 멤버의 AccessToken을 입력하세요. null은 게스트입니다.") @LoginMember Optional<Member> memberOpt
-//    );
+    @Operation(summary = "면접 피드백 불러오기", description = "LLM에 받은 면접 피드백을 불러옵니다.")
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200", description = "면접 피드백 불러오기 성공",
+                    content = {@Content(mediaType = "application/json", schema = @Schema(implementation = LLMFeedbackRes.class))}
+            ),
+            @ApiResponse(
+                    responseCode = "400", description = "면접 피드백 불러오기 실패(잘못된 요청 방식)",
+                    content = {@Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class))}
+            )
+    })
+    @GetMapping("/feedbacks")
+    ResponseEntity<SuccessResponse<LLMFeedbackRes>> getFeedbackResult();
+
+    @Operation(summary = "면접 점수 불러오기", description = "LLM에 받은 면접 점수를 불러옵니다.")
+    @ApiResponses(value = {
+            @ApiResponse(
+                    responseCode = "200", description = "면접 점수 불러오기 성공",
+                    content = {@Content(mediaType = "application/json", schema = @Schema(implementation = LLMScoreRes.class))}
+            ),
+            @ApiResponse(
+                    responseCode = "400", description = "면접 점수 불러오기 실패(잘못된 요청 방식)",
+                    content = {@Content(mediaType = "application/json", schema = @Schema(implementation = ErrorResponse.class))}
+            )
+    })
+    @GetMapping("/scores")
+    ResponseEntity<SuccessResponse<LLMScoreRes>> getScoreResult();
 }
