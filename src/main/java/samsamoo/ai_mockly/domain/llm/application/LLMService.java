@@ -87,11 +87,16 @@ public class LLMService {
     }
 
     @Transactional
-    public SuccessResponse<Message> processResumeQa(MultipartFile multipartFile) {
+    public SuccessResponse<Message> processResumeQa(MultipartFile multipartFile, Long memberId) {
         try {
             byte[] fileBytes = multipartFile.getBytes();
             String filename = multipartFile.getOriginalFilename();
             LLMResponseDTO response = llmClient.uploadQa(fileBytes, filename).block();
+
+            // LLM 피드백 결과 저장
+            getEvaluateFeedback(memberId);
+            // LLM 점수 결과 저장
+            getScoreFeedback(memberId);
 
             Message message = Message.builder()
                     .message(response.getMessage())
@@ -104,7 +109,7 @@ public class LLMService {
     }
 
     @Transactional
-    public SuccessResponse<LLMFeedbackRes> getEvaluateFeedback(Long memberId) {
+    private LLMFeedbackRes getEvaluateFeedback(Long memberId) {
         String rawFeedbackText = llmClient.fetchFeedbacksText().block();
 
         if(rawFeedbackText == null || rawFeedbackText.isBlank()) {
@@ -133,15 +138,13 @@ public class LLMService {
                 .filter(feedback -> !feedback.isBlank())
                 .collect(Collectors.toList());
 
-        LLMFeedbackRes llmFeedbackRes = LLMFeedbackRes.builder()
+        return LLMFeedbackRes.builder()
                 .feedbackList(feedbackList)
                 .build();
-
-        return SuccessResponse.of(llmFeedbackRes);
     }
 
     @Transactional
-    public SuccessResponse<LLMScoreRes> getScoreFeedback(Long memberId) {
+    private LLMScoreRes getScoreFeedback(Long memberId) {
         String rawScoreText = llmClient.fetchScoresText().block();
 
         if(rawScoreText == null || rawScoreText.isBlank()) {
@@ -212,7 +215,7 @@ public class LLMService {
 
             Score score = Score.builder()
                     .member(member)
-                    .totalScore(totalHarmonicScore)
+                    .totalScore(round(totalHarmonicScore,1))
                     .highScore(highScore)
                     .build();
 
@@ -234,19 +237,17 @@ public class LLMService {
             scoreRepository.save(score);
 
             if(highScore) {
-                member.updateMaxScore(totalHarmonicScore);
+                member.updateMaxScore(round(totalHarmonicScore,1));
                 memberRepository.save(member);
             }
         }
 
-        LLMScoreRes llmScoreRes = LLMScoreRes.builder()
+        return LLMScoreRes.builder()
                 .scoreMap(scoreMap)
                 .techScore(round(technicalScore, 2))
                 .communicateScore(round(communicationScore, 2))
                 .totalScore(round(totalHarmonicScore, 2))
                 .build();
-
-        return SuccessResponse.of(llmScoreRes);
     }
 
     // 조화 평균 계산 메서드
