@@ -17,8 +17,8 @@ import samsamoo.ai_mockly.global.common.SuccessResponse;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
@@ -38,7 +38,11 @@ public class ScoreService {
                 .map(score -> {
                     Member scoreMember = score.getMember();
 
-                    Feedback feedback = feedbackRepository.findByMemberAndCreatedAt(scoreMember, score.getCreatedAt())
+                    LocalDateTime scoreTime = score.getCreatedAt();
+                    LocalDateTime startTime = scoreTime.minusSeconds(1);
+                    LocalDateTime endTime = scoreTime.plusSeconds(1);
+
+                    Feedback feedback = feedbackRepository.findByMemberAndCreatedAtBetweenOrderByCreatedAtDesc(scoreMember, startTime, endTime)
                             .orElse(null);
 
                     Boolean unlocked = false;
