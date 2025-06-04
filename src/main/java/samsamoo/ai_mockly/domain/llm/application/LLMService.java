@@ -20,6 +20,8 @@ import samsamoo.ai_mockly.global.common.SuccessResponse;
 import samsamoo.ai_mockly.infrastructure.external.llm.LLMInterviewClient;
 import samsamoo.ai_mockly.infrastructure.external.llm.dto.LLMResponseDTO;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
@@ -165,13 +167,40 @@ public class LLMService {
                     totalScore.addAndGet(value);
                 });
 
+        Map<Category, Integer> parsedScores = new EnumMap<>(Category.class);
+        for (Map.Entry<String, Integer> entry : scoreMap.entrySet()) {
+            try {
+                Category category = Category.fromValue(entry.getKey());
+                parsedScores.put(category, entry.getValue());
+            } catch (Exception e) {
+                throw new RuntimeException("점수 분류 실패: " + entry.getKey() + "는 정규화된 분류가 아닙니다." + e.getMessage());
+            }
+        }
+
+        // 점수 계산(조화평균)
+        double technicalScore = harmonicMean(
+                parsedScores.entrySet().stream()
+                        .filter(e -> Category.TECHNICAL_AND_PROBLEM_SOLVING_CATEGORY.contains(e.getKey()))
+                        .map(Map.Entry::getValue)
+                        .toList()
+        );
+
+        double communicationScore = harmonicMean(
+                parsedScores.entrySet().stream()
+                        .filter(e -> Category.COMMUNICATION_AND_EXPRESSION_CATEGORY.contains(e.getKey()))
+                        .map(Map.Entry::getValue)
+                        .toList()
+        );
+
+        double totalHarmonicScore = (technicalScore + communicationScore > 0)
+                ? (2 * technicalScore * communicationScore) / (technicalScore + communicationScore)
+                : 0.0;
+
         if (memberId != null) {
             Member member = memberRepository.findById(memberId)
                     .orElseThrow(() -> new IllegalStateException("해당 유저가 없습니다."));
 
-            double avgScore = totalScore.get()/10.0;
-
-            Boolean highScore = member.getMaxScore() == null || member.getMaxScore() <= avgScore;
+            Boolean highScore = member.getMaxScore() == null || member.getMaxScore() <= totalHarmonicScore;
 
             if(highScore) {
                 scoreRepository.findAllByMemberAndHighScore(member, true)
@@ -183,7 +212,7 @@ public class LLMService {
 
             Score score = Score.builder()
                     .member(member)
-                    .totalScore(avgScore)
+                    .totalScore(totalHarmonicScore)
                     .highScore(highScore)
                     .build();
 
@@ -205,15 +234,32 @@ public class LLMService {
             scoreRepository.save(score);
 
             if(highScore) {
-                member.updateMaxScore(avgScore);
+                member.updateMaxScore(totalHarmonicScore);
                 memberRepository.save(member);
             }
         }
 
         LLMScoreRes llmScoreRes = LLMScoreRes.builder()
                 .scoreMap(scoreMap)
+                .techScore(round(technicalScore, 2))
+                .communicateScore(round(communicationScore, 2))
+                .totalScore(round(totalHarmonicScore, 2))
                 .build();
 
         return SuccessResponse.of(llmScoreRes);
+    }
+
+    // 조화 평균 계산 메서드
+    private double harmonicMean(List<Integer> values) {
+        List<Integer> nonZeroValues = values.stream().filter(v -> v > 0).toList();
+        if(nonZeroValues.isEmpty()) return 0.0;
+        double sum = nonZeroValues.stream().mapToDouble(v -> 1.0 / v).sum();
+        return nonZeroValues.size() / sum;
+    }
+    // 소수점 자리 제한
+    private double round(double value, int digits) {
+        return BigDecimal.valueOf(value)
+                .setScale(digits, RoundingMode.HALF_UP)
+                .doubleValue();
     }
 }

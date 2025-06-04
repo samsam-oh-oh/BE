@@ -10,4 +10,8 @@ import java.util.Map;
 public class LLMScoreRes {
 
     private Map<String, Integer> scoreMap;
+
+    private double techScore;
+    private double communicateScore;
+    private double totalScore;
 }
