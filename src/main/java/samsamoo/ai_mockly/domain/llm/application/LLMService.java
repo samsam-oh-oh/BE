@@ -20,6 +20,8 @@ import samsamoo.ai_mockly.global.common.SuccessResponse;
 import samsamoo.ai_mockly.infrastructure.external.llm.LLMInterviewClient;
 import samsamoo.ai_mockly.infrastructure.external.llm.dto.LLMResponseDTO;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
@@ -85,11 +87,16 @@ public class LLMService {
     }
 
     @Transactional
-    public SuccessResponse<Message> processResumeQa(MultipartFile multipartFile) {
+    public SuccessResponse<Message> processResumeQa(MultipartFile multipartFile, Long memberId) {
         try {
             byte[] fileBytes = multipartFile.getBytes();
             String filename = multipartFile.getOriginalFilename();
             LLMResponseDTO response = llmClient.uploadQa(fileBytes, filename).block();
+
+            // LLM 피드백 결과 저장
+            getEvaluateFeedback(memberId);
+            // LLM 점수 결과 저장
+            getScoreFeedback(memberId);
 
             Message message = Message.builder()
                     .message(response.getMessage())
@@ -102,17 +109,10 @@ public class LLMService {
     }
 
     @Transactional
-    public SuccessResponse<LLMFeedbackRes> getEvaluateFeedback(Long memberId) {
+    protected LLMFeedbackRes getEvaluateFeedback(Long memberId) {
         String rawFeedbackText = llmClient.fetchFeedbacksText().block();
 
-        if(rawFeedbackText == null || rawFeedbackText.isBlank()) {
-            throw new IllegalStateException("피드백을 가져오는데 실패했습니다.");
-        }
-
-        String cleaned = rawFeedbackText
-                .replaceFirst(JSON_PARSER_PATTERN+"\\\"feedback\\\":\\\"", "")
-                .replaceAll(NEWLINE_PATTERN, "")
-                .replaceAll(JSON_SUFFIX_PATTERN, "");
+        String cleaned = cleanedFeedback(rawFeedbackText);
 
         if(memberId != null) {
             Member member = memberRepository.findById(memberId)
@@ -131,47 +131,54 @@ public class LLMService {
                 .filter(feedback -> !feedback.isBlank())
                 .collect(Collectors.toList());
 
-        LLMFeedbackRes llmFeedbackRes = LLMFeedbackRes.builder()
+        return LLMFeedbackRes.builder()
                 .feedbackList(feedbackList)
                 .build();
+    }
 
-        return SuccessResponse.of(llmFeedbackRes);
+    private String cleanedFeedback(String rawFeedback) {
+        if(rawFeedback == null || rawFeedback.isBlank()) {
+            throw new IllegalStateException("피드백을 가져오는데 실패했습니다.");
+        }
+
+        return rawFeedback
+                .replaceFirst(JSON_PARSER_PATTERN+"\\\"feedback\\\":\\\"", "")
+                .replaceAll(NEWLINE_PATTERN, "")
+                .replaceAll(JSON_SUFFIX_PATTERN, "");
     }
 
     @Transactional
-    public SuccessResponse<LLMScoreRes> getScoreFeedback(Long memberId) {
+    protected LLMScoreRes getScoreFeedback(Long memberId) {
         String rawScoreText = llmClient.fetchScoresText().block();
 
-        if(rawScoreText == null || rawScoreText.isBlank()) {
-            throw new IllegalArgumentException("점수를 가져오는데 실패했습니다.");
-        }
+        Map<String, Integer> scoreMap = scoreMap(rawScoreText);
 
-        String cleaned = rawScoreText
-                .replaceFirst(JSON_PARSER_PATTERN+"\\\"score\\\":\\\"", "")
-                .replaceAll(NEWLINE_PATTERN, "")
-                .replaceAll(JSON_SUFFIX_PATTERN, "");
+        Map<Category, Integer> parsedScores = parsedScores(scoreMap);
 
-        Map<String, Integer> scoreMap = new LinkedHashMap<>();
-        AtomicInteger totalScore = new AtomicInteger(0);
+        // 점수 계산(조화평균)
+        double technicalScore = harmonicMean(
+                parsedScores.entrySet().stream()
+                        .filter(e -> Category.TECHNICAL_AND_PROBLEM_SOLVING_CATEGORY.contains(e.getKey()))
+                        .map(Map.Entry::getValue)
+                        .toList()
+        );
 
-        Arrays.stream(cleaned.split("\\/100"))
-                .map(String::trim)
-                .filter(line -> !line.isBlank() && line.contains(":"))
-                .map(line -> line.split(":", 2))
-                .forEach(pair -> {
-                    String label = pair[0].trim();
-                    Integer value = Integer.parseInt(pair[1].trim());
-                    scoreMap.put(label, value);
-                    totalScore.addAndGet(value);
-                });
+        double communicationScore = harmonicMean(
+                parsedScores.entrySet().stream()
+                        .filter(e -> Category.COMMUNICATION_AND_EXPRESSION_CATEGORY.contains(e.getKey()))
+                        .map(Map.Entry::getValue)
+                        .toList()
+        );
+
+        double totalHarmonicScore = (technicalScore + communicationScore > 0)
+                ? (2 * technicalScore * communicationScore) / (technicalScore + communicationScore)
+                : 0.0;
 
         if (memberId != null) {
             Member member = memberRepository.findById(memberId)
                     .orElseThrow(() -> new IllegalStateException("해당 유저가 없습니다."));
 
-            double avgScore = totalScore.get()/10.0;
-
-            Boolean highScore = member.getMaxScore() == null || member.getMaxScore() <= avgScore;
+            Boolean highScore = member.getMaxScore() == null || member.getMaxScore() <= totalHarmonicScore;
 
             if(highScore) {
                 scoreRepository.findAllByMemberAndHighScore(member, true)
@@ -183,7 +190,7 @@ public class LLMService {
 
             Score score = Score.builder()
                     .member(member)
-                    .totalScore(avgScore)
+                    .totalScore(round(totalHarmonicScore,1))
                     .highScore(highScore)
                     .build();
 
@@ -205,13 +212,119 @@ public class LLMService {
             scoreRepository.save(score);
 
             if(highScore) {
-                member.updateMaxScore(avgScore);
+                member.updateMaxScore(round(totalHarmonicScore,1));
                 memberRepository.save(member);
             }
         }
 
+        return LLMScoreRes.builder()
+                .scoreMap(scoreMap)
+                .techScore(round(technicalScore, 2))
+                .communicateScore(round(communicationScore, 2))
+                .totalScore(round(totalHarmonicScore, 2))
+                .build();
+    }
+
+    private Map<String, Integer> scoreMap(String rawScoreText) {
+        if(rawScoreText == null || rawScoreText.isBlank()) {
+            throw new IllegalArgumentException("점수를 가져오는데 실패했습니다.");
+        }
+
+        String cleaned = rawScoreText
+                .replaceFirst(JSON_PARSER_PATTERN+"\\\"score\\\":\\\"", "")
+                .replaceAll(NEWLINE_PATTERN, "")
+                .replaceAll(JSON_SUFFIX_PATTERN, "");
+
+        Map<String, Integer> scoreMap = new LinkedHashMap<>();
+
+        Arrays.stream(cleaned.split("\\/100"))
+                .map(String::trim)
+                .filter(line -> !line.isBlank() && line.contains(":"))
+                .map(line -> line.split(":", 2))
+                .forEach(pair -> {
+                    String label = pair[0].trim();
+                    Integer value = Integer.parseInt(pair[1].trim());
+                    scoreMap.put(label, value);
+                });
+
+        return scoreMap;
+    }
+
+    private Map<Category, Integer> parsedScores(Map<String, Integer> scoreMap) {
+        Map<Category, Integer> parsedScores = new EnumMap<>(Category.class);
+        for (Map.Entry<String, Integer> entry : scoreMap.entrySet()) {
+            try {
+                Category category = Category.fromValue(entry.getKey());
+                parsedScores.put(category, entry.getValue());
+            } catch (Exception e) {
+                throw new RuntimeException("점수 분류 실패: " + entry.getKey() + "는 정규화된 분류가 아닙니다." + e.getMessage());
+            }
+        }
+        return parsedScores;
+    }
+
+    // 조화 평균 계산 메서드
+    private double harmonicMean(List<Integer> values) {
+        List<Integer> nonZeroValues = values.stream().filter(v -> v > 0).toList();
+        if(nonZeroValues.isEmpty()) return 0.0;
+        double sum = nonZeroValues.stream().mapToDouble(v -> 1.0 / v).sum();
+        return nonZeroValues.size() / sum;
+    }
+    // 소수점 자리 제한
+    private double round(double value, int digits) {
+        return BigDecimal.valueOf(value)
+                .setScale(digits, RoundingMode.HALF_UP)
+                .doubleValue();
+    }
+
+    public SuccessResponse<LLMFeedbackRes> getFeedbackResult() {
+        String rawFeedbackText = llmClient.fetchFeedbacksText().block();
+
+        String cleaned = cleanedFeedback(rawFeedbackText);
+
+        List<String> feedbackList = Arrays.stream(cleaned.split(SPLIT_PATTERN))
+                .map(String::trim)
+                .filter(feedback -> !feedback.isBlank())
+                .collect(Collectors.toList());
+
+        LLMFeedbackRes llmFeedbackRes = LLMFeedbackRes.builder()
+                .feedbackList(feedbackList)
+                .build();
+
+        return SuccessResponse.of(llmFeedbackRes);
+    }
+
+    public SuccessResponse<LLMScoreRes> getScoreResult() {
+        String rawScoreText = llmClient.fetchScoresText().block();
+
+        Map<String, Integer> scoreMap = scoreMap(rawScoreText);
+
+        Map<Category, Integer> parsedScores = parsedScores(scoreMap);
+
+        // 점수 계산(조화평균)
+        double technicalScore = harmonicMean(
+                parsedScores.entrySet().stream()
+                        .filter(e -> Category.TECHNICAL_AND_PROBLEM_SOLVING_CATEGORY.contains(e.getKey()))
+                        .map(Map.Entry::getValue)
+                        .toList()
+        );
+
+        double communicationScore = harmonicMean(
+                parsedScores.entrySet().stream()
+                        .filter(e -> Category.COMMUNICATION_AND_EXPRESSION_CATEGORY.contains(e.getKey()))
+                        .map(Map.Entry::getValue)
+                        .toList()
+        );
+
+        double totalHarmonicScore = (technicalScore + communicationScore > 0)
+                ? (2 * technicalScore * communicationScore) / (technicalScore + communicationScore)
+                : 0.0;
+
         LLMScoreRes llmScoreRes = LLMScoreRes.builder()
                 .scoreMap(scoreMap)
+                .techScore(round(technicalScore, 2))
+                .communicateScore(round(communicationScore, 2))
+                .totalScore(round(totalHarmonicScore, 2))
                 .build();
 
         return SuccessResponse.of(llmScoreRes);

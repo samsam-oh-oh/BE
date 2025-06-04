@@ -5,6 +5,7 @@ import lombok.Getter;
 
 import java.util.Arrays;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -36,4 +37,22 @@ public enum Category {
         }
         return category;
     }
+
+    // 기술 전문성 및 문제 해결 능력 카테고리
+    public static final Set<Category> TECHNICAL_AND_PROBLEM_SOLVING_CATEGORY = Set.of(
+            CORE_TECH_UNDERSTANDING,
+            COMPARISON_ANALYSIS,
+            PERFORMANCE_OPTIMIZATION,
+            TREND_AWARENESS,
+            PROBLEM_SOLVING_CLARITY
+    );
+
+    // 표현력 및 커뮤니케이션 역량 카테고리
+    public static final Set<Category> COMMUNICATION_AND_EXPRESSION_CATEGORY = Set.of(
+            TERMINOLOGY_ACCURACY,
+            PROJECT_EXPLANATION,
+            RESULT_IMPROVEMENT_EFFORT,
+            PRACTICAL_APPLICABILITY,
+            COLLABORATION_CONTRIBUTION
+    );
 }

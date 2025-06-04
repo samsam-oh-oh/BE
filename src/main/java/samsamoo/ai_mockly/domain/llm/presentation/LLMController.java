@@ -44,7 +44,8 @@ public class LLMController implements LLMApi {
 
     @Override
     @PostMapping(value = "/upload/qa", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<SuccessResponse<Message>> uploadQa(@RequestPart("STT_file") MultipartFile multipartFile) {
+    public ResponseEntity<SuccessResponse<Message>> uploadQa(@LoginMember Optional<Member> memberOpt, @RequestPart("STT_file") MultipartFile multipartFile) {
+        Long memberId = memberOpt.map(Member::getId).orElse(null);
         if(multipartFile==null || multipartFile.isEmpty()) {
             throw new IllegalArgumentException("파일이 업로드 되지 않음");
         }
@@ -52,20 +53,18 @@ public class LLMController implements LLMApi {
         if(contentType == null || !contentType.startsWith("text/plain")) {
             throw new IllegalArgumentException("txt 파일만 업로드 가능합니다.");
         }
-        return ResponseEntity.ok(llmService.processResumeQa(multipartFile));
+        return ResponseEntity.ok(llmService.processResumeQa(multipartFile, memberId));
     }
 
     @Override
     @GetMapping("/feedbacks")
-    public ResponseEntity<SuccessResponse<LLMFeedbackRes>> getEvaluateFeedback(@LoginMember Optional<Member> memberOpt) {
-        Long memberId = memberOpt.map(Member::getId).orElse(null);
-        return ResponseEntity.ok(llmService.getEvaluateFeedback(memberId));
+    public ResponseEntity<SuccessResponse<LLMFeedbackRes>> getFeedbackResult() {
+        return ResponseEntity.ok(llmService.getFeedbackResult());
     }
 
     @Override
     @GetMapping("/scores")
-    public ResponseEntity<SuccessResponse<LLMScoreRes>> getScoreFeedback(@LoginMember Optional<Member> memberOpt) {
-        Long memberId = memberOpt.map(Member::getId).orElse(null);
-        return ResponseEntity.ok(llmService.getScoreFeedback(memberId));
+    public ResponseEntity<SuccessResponse<LLMScoreRes>> getScoreResult() {
+        return ResponseEntity.ok(llmService.getScoreResult());
     }
 }
