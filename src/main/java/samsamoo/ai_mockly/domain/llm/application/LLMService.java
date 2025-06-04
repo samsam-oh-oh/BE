@@ -236,7 +236,6 @@ public class LLMService {
                 .replaceAll(JSON_SUFFIX_PATTERN, "");
 
         Map<String, Integer> scoreMap = new LinkedHashMap<>();
-        AtomicInteger totalScore = new AtomicInteger(0);
 
         Arrays.stream(cleaned.split("\\/100"))
                 .map(String::trim)
@@ -246,7 +245,6 @@ public class LLMService {
                     String label = pair[0].trim();
                     Integer value = Integer.parseInt(pair[1].trim());
                     scoreMap.put(label, value);
-                    totalScore.addAndGet(value);
                 });
 
         return scoreMap;
