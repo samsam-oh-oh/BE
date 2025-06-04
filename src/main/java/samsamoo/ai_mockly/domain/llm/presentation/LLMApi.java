@@ -69,6 +69,7 @@ public interface LLMApi {
     })
     @PostMapping(value = "/upload/qa", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     ResponseEntity<SuccessResponse<Message>> uploadQa(
+            @Parameter(description = "LLM 결과를 저장할 멤버의 AccessToken을 입력하세요. null은 게스트입니다.") @LoginMember Optional<Member> member,
             @Parameter(description = "LLM에 보낼 txt 파일을 입력하세요. key 값은 STT_file입니다.", required = true) @RequestPart("STT_file") MultipartFile multipartFile);
 
     @Operation(summary = "면접 피드백 불러오기", description = "LLM에 받은 면접 피드백을 불러옵니다.")
@@ -83,8 +84,7 @@ public interface LLMApi {
             )
     })
     @GetMapping("/feedbacks")
-    ResponseEntity<SuccessResponse<LLMFeedbackRes>> getEvaluateFeedback(
-            @Parameter(description = "피드백에 저장할 멤버의 AccessToken을 입력하세요. null은 게스트입니다.") @LoginMember Optional<Member> memberOpt);
+    ResponseEntity<SuccessResponse<LLMFeedbackRes>> getFeedbackResult();
 
     @Operation(summary = "면접 점수 불러오기", description = "LLM에 받은 면접 점수를 불러옵니다.")
     @ApiResponses(value = {
@@ -98,7 +98,5 @@ public interface LLMApi {
             )
     })
     @GetMapping("/scores")
-    ResponseEntity<SuccessResponse<LLMScoreRes>> getScoreFeedback(
-            @Parameter(description = "피드백에 저장할 멤버의 AccessToken을 입력하세요. null은 게스트입니다.") @LoginMember Optional<Member> memberOpt
-    );
+    ResponseEntity<SuccessResponse<LLMScoreRes>> getScoreResult();
 }
